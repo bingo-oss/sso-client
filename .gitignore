@@ -1,0 +1,30 @@
+*.class
+.DS_Store
+
+# Package Files #
+*.war
+*.ear
+
+# Eclipse Files #
+.settings
+.project
+.classpath
+.externalToolBuilders/
+.tern-project
+
+# intellij
+.idea/
+*.iml
+
+# Maven Fields #
+target
+
+# Local Files #
+*.local.*
+*_local.*
+
+# Other Files #
+derby.log
+
+#ssov2 package#
+ssov2/
