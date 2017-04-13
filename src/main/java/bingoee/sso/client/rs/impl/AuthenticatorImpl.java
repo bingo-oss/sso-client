@@ -3,15 +3,40 @@ package bingoee.sso.client.rs.impl;
 
 import bingoee.sso.client.rs.Authenticator;
 import bingoee.sso.client.rs.Principal;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.InvalidKeyException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.Signature;
+import java.security.SignatureException;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
+import java.util.Objects;
 
 /**
  * Created by kael on 2017/4/7.
  */
 class AuthenticatorImpl implements Authenticator {
 
+    public static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String BEARER               = "Bearer";
+    
+    private static final Logger log = LoggerFactory.getLogger(AuthenticatorImpl.class);
+    
     private String publicKey;
+    private URL publicKeyUrl;
 
     public AuthenticatorImpl(URL publicKeyUrl) {
         this(null, publicKeyUrl);
@@ -23,6 +48,7 @@ class AuthenticatorImpl implements Authenticator {
 
     public AuthenticatorImpl(String publicKey, URL publicKeyUrl) {
         this.publicKey = publicKey;
+        this.publicKeyUrl = publicKeyUrl;
     }
 
     @Override
@@ -36,18 +62,141 @@ class AuthenticatorImpl implements Authenticator {
         return decodeToPrincipal(parseAccessToken(token));
     }
 
-    protected Principal decodeToPrincipal(String json) {
-        // TODO decode json
-        return null;
+    @Override
+    public String extractToken(HttpServletRequest request) {
+        String header = request.getHeader(AUTHORIZATION_HEADER);
+        if(header == null || header.trim().isEmpty()){
+            return null;
+        }
+        header = header.trim();
+        if(header.startsWith(BEARER)){
+            header = header.substring(BEARER.length());
+            return header.trim();
+        }else {
+            return header;
+        }
     }
 
-    protected String parseJwtToken(String token) {
+    protected Principal decodeToPrincipal(String json) {
         
+        log.debug("parse json :{}", json);
+        
+        if(json == null || json.trim().isEmpty()){
+            return null;
+        }
+        JSONObject object = JSON.parseObject(json);
+        PrincipalImpl principal = new PrincipalImpl();
+        
+        Object id = object.remove("user_id");
+        Object username = object.remove("username");
+        Object scope = object.remove("scope");
+        Object clientId = object.remove("client_id");
+        Object expiresIn = object.remove("expires_in");
+        Object expires = object.remove("expires");
+        
+        principal.setId(toStringOrNull(id));
+        principal.setUsername(toStringOrNull(username));
+        principal.setScope(toStringOrNull(scope));
+        principal.setClientId(toStringOrNull(clientId));
+        if(expiresIn != null){
+            principal.setExpiresIn(Integer.parseInt(toStringOrNull(expiresIn)));
+        }
+        if(expires != null){
+            principal.setExpires(Long.parseLong(toStringOrNull(expires)));
+        }
+        
+        object.entrySet().forEach(entry -> principal.set(entry.getKey(),entry.getValue()));
+        
+        return principal;
+    }
+
+    protected String toStringOrNull(Object o){
+        return o==null?null:Objects.toString(o);
+    }
+    
+    protected String parseJwtToken(String token) throws UnsupportedEncodingException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException, InvalidKeyException {
+        String[] parts = token.split("\\.");
+
+        String content;
+        String payload;
+        String signature;
+
+        content = parts[0] + "." + parts[1];
+        payload = parts[1];
+        signature = parts[2];
+        //验证token
+        if (!verifySignature(content, signature)) {
+            // 验证失败
+        } else {
+            // 验证成功
+            byte[] decodes = Base64.getUrlDecoder().decode(payload.getBytes("UTF-8"));
+            String info = new String(decodes);
+            return info;
+        }
         return null;
     }
 
     protected String parseAccessToken(String token) {
         throw new IllegalArgumentException("not support access token");
+    }
+    
+    // 用公钥校验token的有效性
+    protected boolean verifySignature(String content, String signed) throws SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException {
+        byte[] signedData = Base64.getUrlDecoder().decode(signed.getBytes("UTF-8"));
+        byte[] contentData = content.getBytes();
+
+        Signature signature = Signature.getInstance("SHA256withRSA");
+        if(publicKey == null || publicKey.trim().isEmpty()){
+            refreshPublicKey();
+        }
+        signature.initVerify(decodePublicKey(publicKey));
+        signature.update(contentData);
+        try {
+            boolean verified = signature.verify(signedData);
+            if(verified){
+                return true;
+            }
+        } catch (SignatureException e) {
+            e.printStackTrace();
+        }
+        if(refreshPublicKey()){
+            signature.initVerify(decodePublicKey(publicKey));
+            signature.update(contentData);
+            return signature.verify(signedData);
+        }
+        return false;
+    }
+    // 生成校验用的公钥
+    protected RSAPublicKey decodePublicKey(String base64) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(Base64.getMimeDecoder().decode(base64));
+        KeyFactory f = KeyFactory.getInstance("RSA");
+        return (RSAPublicKey) f.generatePublic(spec);
+    }
+    protected boolean refreshPublicKey(){
+        if(publicKeyUrl == null){
+            return false;
+        }
+        try {
+            HttpURLConnection connection = (HttpURLConnection)publicKeyUrl.openConnection();
+            connection.setConnectTimeout(3000);
+            connection.connect();
+            InputStream is = connection.getInputStream();
+            StringBuilder sb = new StringBuilder();
+            do{
+                int i = is.read();
+                if(i == -1){
+                    break;
+                }
+                sb.append((char)i);
+            }while (true);
+            if(sb.length() > 0){
+                this.publicKey = sb.toString();
+                return true;
+            }
+            return false;
+        } catch (IOException e) {
+            return false;
+        }
     }
     
 }

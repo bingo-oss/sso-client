@@ -1,5 +1,7 @@
 package bingoee.sso.client.rs;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * Created by kael on 2017/4/7.
  */
@@ -11,4 +13,11 @@ public interface Authenticator {
      * @throws Throwable 异常信息
      */
     Principal verifyToken(String token) throws Throwable;
+
+    /**
+     * 从http请求中解析出token
+     * @param request http请求
+     * @return jwt token或access token
+     */
+    String extractToken(HttpServletRequest request);
 }
