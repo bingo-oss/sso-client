@@ -72,7 +72,7 @@ protected abstract void localLogin(HttpServletRequest req, HttpServletResponse r
 示例如下：
 
 ```java
-package net.bingosoft.LoginServlet;
+package net.bingosoft;
 
 public class LoginServlet extends AbstractSignOnServlet {
     @Override
@@ -130,3 +130,58 @@ public class LoginServlet extends AbstractSignOnServlet {
 
 > 应用标识和应用密码是应用的身份凭据，也是sso信任应用的基础，因此应用要接入sso，**需要先在sso申请注册应用**，并获得sso颁发的应用id和应用secret。
 
+### 配置登录页面
+
+一般来说，当我们访问一个web应用的时候，如果用户没有登录，web应用会自动跳转到登录页面，引导用户登录，目前java web应用有很多开源框架可以实现访问安全验证，并自动跳转到登录页面，这时我们需要将自动跳转的登录页面修改为sdk的登录地址，以便让sdk接管这个登录过程。
+
+这里我们用一个简单的拦截器模拟登录校验：
+
+```java
+package net.bingosoft;
+
+public class LoginFilter implements Filter {
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {}
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response,
+                         FilterChain chain) throws IOException, ServletException {
+        HttpServletRequest req = (HttpServletRequest)request;
+        HttpServletResponse resp = (HttpServletResponse)response;
+        
+        // 忽略sdk的访问路径
+        String url = req.getRequestURI();
+        if(url.startsWith(req.getContextPath()+"/sso_client/")){
+            chain.doFilter(req,resp);
+            return;
+        }
+        // 判断session中是否有user属性，有则认为已经登录，没有则跳转到登录页面
+        Object o = req.getSession().getAttribute("user");
+        if(o != null && o instanceof LoginUser){
+            chain.doFilter(req,resp);
+            return;
+        }
+        // 跳转到登录页面
+        resp.sendRedirect(req.getContextPath()+"/sso_client/login");
+    }
+    @Override
+    public void destroy() {}
+}
+```
+
+在web.xml中配置如下：
+
+```xml
+<filter>
+	<filter-name>loginFilter</filter-name>
+	<filter-class>net.bingosoft.LoginFilter</filter-class>
+</filter>
+
+<filter-mapping>
+	<filter-name>loginFilter</filter-name>
+	<url-pattern>/*</url-pattern>
+</filter-mapping>
+```
+
+当一个请求访问应用的时候，如果已经登录，则会自动执行下一步，如果还没有登录（`req.getSession().getAttribute("user")==null`），则会重定向到`/sso_client/login`这个路径，从这里开始将进入第3步，整个登录过程开始由sdk接管。
+
+> 这里使用一个拦截器模拟拦截未登录的请求，实际上无论是使用什么安全框架，都会有跳转到登录页面的过程，这个登录页面的路径有时候是可以配置的，有时候是固定的，如果是可以配置的，直接配置为sdk的登录路径即可，如果是固定的，可以在这个固定的路径的响应中(如jsp页面)再做一次跳转，跳转到sdk登录路径上即可将登录过程交给sdk接管。
