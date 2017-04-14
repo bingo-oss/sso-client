@@ -217,3 +217,50 @@ GET /sso_client/oauth2_logout
 此时sso会将当前设备登录的所有应用都自动注销。
 
 > **注意**：单点注销依赖的是应用在向sso申请注册的时候填写的注销信息，在向sso申请注册应用的时候，需要填写应用的注销地址，在单点注销时，sso会发一个http请求到应用的注销地址实现应用注销。
+
+
+# 接入品高API网关
+
+如果想要开发rest API并接入品高API网关，需要按照品高API网关的规范接入，品高API网关代理请求时，会代替API进行用户身份校验，并将校验结果以[JWT](http://self-issued.info/docs/draft-ietf-oauth-json-web-token.html)的方式传递给API，此时API作为资源服务器需要校验API确认用户身份。
+
+## 校验JWT
+
+本sdk中提供了对JWT的校验，示例代码如下：
+
+```java
+public static void main(String[] args){
+	String publicKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDDASOjIWexLpnXiJNJF2pL6NzP\n" +
+                "fBoF0tKEr2ttAkJ/7f3uUHhj2NIhQ01Wu9OjHfXjCvQSXMWqqc1+O9G1UwB2Xslb\n" +
+                "WNwEZFMwmQdP5VleGbJLR3wOl3IzdggkxBJ1Q9rXUlVtslK/CsMtkwkQEg0eZDH1\n" +
+                "VeJXqKBlEhsNckYIGQIDAQAB";
+        String jwtToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9." +
+                "eyJjbGllbnRfaWQiOiJjb25zb2xlIiwidXNlcl9pZCI6IjQ" +
+                "zRkU2NDc2LUNEN0ItNDkzQi04MDQ0LUM3RTMxNDlEMDg3Ni" +
+                "IsInVzZXJuYW1lIjoiYWRtaW4iLCJzY29wZSI6InBlcm0iL" +
+                "CJleHBpcmVzX2luIjoyMzY5NCwiZXhwaXJlcyI6MTQ5MjAw" +
+                "Mzc1MjAwMCwiZW5hYmxlZCI6MSwiZXhwIjoxNDkyMDE2MDU" +
+                "3MjMyfQ.rig2Y67pkpxxfJxZD9gyKCCwQK5K9bS5w6FcDhn" +
+                "kJWc8FEXZEn3kICByb2W9PivouRc5l2_9N4dVXyEH1s2k17" +
+                "Jp9aAWU7AFEWwtjdRQe7UIjCxock--FOUzuUKZhrI1tgeVH" +
+                "P4p-NNnkh-at43NxEI63HLOKvCo67R3QgK3wrg";
+        Authenticator authenticator = AuthenticatorFactory.generateByPublicKey(publicKey);
+        Principal principal = authenticator.verifyToken(jwtToken);
+}
+```
+
+品高API网关的JWT是使用sso的私钥进行签名的，因此需要使用sso公开的公钥进行校验，sdk中有两种方式生成校验器：
+
+```java
+// 通过公钥创建校验器
+Authenticator authenticator = AuthenticatorFactory.generateByPublicKey(publicKey);
+// 通过公钥获取URL创建校验器
+Authenticator authenticator = AuthenticatorFactory.generateByPublicKeyUrl(urlString);
+```
+
+通过公钥创建校验器适用于公钥已知，并且确定不会变化的情况，创建后即可以进行校验。
+
+公共公钥获取URL创建的校验器适用于公钥未知，但是可以通过http url获取的情况，这种情况校验器在第一次进行校验时，会先通过url获取公钥后再进行校验。
+
+校验器校验的结果是`Principal`对象，这个对象包含了JWT中包含的全部信息，如userId，clientId等，如果校验失败则会抛出异常。
+
+在API接收到网关代理的请求时，如果需要获取用户信息，可以先通过校验器校验JWT并获取用户信息即可。
