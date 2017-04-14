@@ -94,13 +94,21 @@ public abstract class AbstractSignOnServlet extends HttpServlet {
     }
 
     /**
-     * 用户在sso登录完成后的本地登录操作
+     * 用户在sso登录完成后的本地登录操作,这个接口必须实现
      * @param req 登录请求
      * @param resp 登录响应
      * @param it idToken解析的结果，可以从这里获取userId和clientId
      * @param token 本次登录产生的access token，保存下来后可以用于调用其他应用
      */
     protected abstract void localLogin(HttpServletRequest req, HttpServletResponse resp, IdToken it, WebAppAccessToken token);
+
+    /**
+     * 用户注销时，sso会调用应用的注销接口，这里不是必须实现的，如果应用自己没有注销接口，可以重新这个方法实现注销，并且将应用的注销地址设置为
+     * <code>{contextPath}/sso_client/logout</code>
+     * 
+     * @param req
+     * @param resp
+     */
     protected void localLogout(HttpServletRequest req, HttpServletResponse resp){}
     
     
