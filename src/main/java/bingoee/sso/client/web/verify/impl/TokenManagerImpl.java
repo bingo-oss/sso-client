@@ -44,6 +44,8 @@ class TokenManagerImpl implements TokenManager {
         Map<String, Object> claim = signer.verify(idToken);
         final String clientId = Strings.nullOrToString(claim.get("aud"));
         final String userId = Strings.nullOrToString(claim.get("sub"));
+        final String name = Strings.nullOrToString(claim.get("name"));
+        final String loginName = Strings.nullOrToString(claim.get("login_name"));
         IdToken it = new IdToken() {
             @Override
             public String getClientId() {
@@ -53,6 +55,16 @@ class TokenManagerImpl implements TokenManager {
             @Override
             public String getUserId() {
                 return userId;
+            }
+
+            @Override
+            public String getLoginName() {
+                return loginName;
+            }
+
+            @Override
+            public String getName() {
+                return name;
             }
         };
         return it;

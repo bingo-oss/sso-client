@@ -6,4 +6,6 @@ package bingoee.sso.client.web.verify;
 public interface IdToken {
     String getClientId();
     String getUserId();
+    String getLoginName();
+    String getName();
 }

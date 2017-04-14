@@ -9,6 +9,8 @@ import bingoee.sso.client.web.verify.IdToken;
 import bingoee.sso.client.web.verify.TokenManager;
 import bingoee.sso.client.web.verify.WebAppAccessToken;
 import bingoee.sso.client.web.verify.impl.TokenManagerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -22,6 +24,8 @@ import java.io.IOException;
  */
 public abstract class AbstractSignOnServlet extends HttpServlet {
 
+    private static final Logger log = LoggerFactory.getLogger(AbstractSignOnServlet.class);
+    
     protected static final String RETURN_URL_PARAM = "return_url";
     protected static final String POST_LOGOUT_REDIRECT_URI_PARAM = "post_logout_redirect_uri";
     
@@ -85,9 +89,11 @@ public abstract class AbstractSignOnServlet extends HttpServlet {
     protected void validateCode(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String code = req.getParameter("code");
         String idToken = req.getParameter("id_token");
-
+        log.debug("verify id_token:"+idToken);
         IdToken it = this.manager.verifyIdToken(idToken);
+        log.debug("fetch access token use code:"+code);
         WebAppAccessToken token = this.manager.fetchAccessToken(code);
+        log.debug("local login for user:"+it.getLoginName());
         localLogin(req,resp,it,token);
         String returnUrl = req.getParameter(RETURN_URL_PARAM);
         resp.sendRedirect(returnUrl);
@@ -127,7 +133,7 @@ public abstract class AbstractSignOnServlet extends HttpServlet {
         if(Strings.isEmpty(postLogoutRedirectUri)){
             postLogoutRedirectUri = Webs.getServerBaseUrl(req);
         }
-        
+        postLogoutRedirectUri = Urls.addQueryString(postLogoutRedirectUri,"__time__",Long.toString(System.currentTimeMillis()));
         String logoutUrl = Urls.addQueryString(config.getLogoutEndpoint(),POST_LOGOUT_REDIRECT_URI_PARAM,postLogoutRedirectUri);
         return logoutUrl;
     }
