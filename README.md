@@ -42,6 +42,15 @@
 
 打包的时候注意要把这几个依赖包也加入到工程依赖中。
 
+下载地址：
+
+* fastjson: [下载](http://repo1.maven.org/maven2/com/alibaba/fastjson/1.2.31/fastjson-1.2.31.jar)
+* slf4j: [下载](https://www.slf4j.org/dist/slf4j-1.7.5.zip)
+
+在slf4j的压缩包里，将`slf4j-api-1.7.5.jar`和`jcl-over-slf4j-1.7.5.jar`两个包拷贝到依赖库即可。
+
+> 这里sdk使用的日志是slf4j日志框架，可以使用任何实现该框架的日志实现如log4j或者logback。
+
 # 接入SSO
 
 品高得sso按照[OpenId Connect](http://openid.net/specs/openid-connect-core-1_0.html)实现，需要对该协议有一定了解。
