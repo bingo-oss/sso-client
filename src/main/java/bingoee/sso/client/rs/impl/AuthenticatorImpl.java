@@ -1,7 +1,9 @@
 package bingoee.sso.client.rs.impl;
 
 
+import bingoee.sso.client.Base64;
 import bingoee.sso.client.CharsetName;
+import bingoee.sso.client.Strings;
 import bingoee.sso.client.rs.Authenticator;
 import bingoee.sso.client.rs.Principal;
 import com.alibaba.fastjson.JSON;
@@ -23,8 +25,7 @@ import java.security.SignatureException;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
-import java.util.Objects;
+import java.util.Map;
 
 /**
  * Created by kael on 2017/4/7.
@@ -95,24 +96,22 @@ class AuthenticatorImpl implements Authenticator {
         Object expiresIn = object.remove("expires_in");
         Object expires = object.remove("expires");
         
-        principal.setId(toStringOrNull(id));
-        principal.setUsername(toStringOrNull(username));
-        principal.setScope(toStringOrNull(scope));
-        principal.setClientId(toStringOrNull(clientId));
+        principal.setId(Strings.nullOrToString(id));
+        principal.setUsername(Strings.nullOrToString((username)));
+        principal.setScope(Strings.nullOrToString((scope)));
+        principal.setClientId(Strings.nullOrToString((clientId)));
         if(expiresIn != null){
-            principal.setExpiresIn(Integer.parseInt(toStringOrNull(expiresIn)));
+            principal.setExpiresIn(Integer.parseInt(Strings.nullOrToString((expiresIn))));
         }
         if(expires != null){
-            principal.setExpires(Long.parseLong(toStringOrNull(expires)));
+            principal.setExpires(Long.parseLong(Strings.nullOrToString((expires))));
         }
         
-        object.entrySet().forEach(entry -> principal.set(entry.getKey(),entry.getValue()));
+        for (Map.Entry<String, Object> entry : object.entrySet()){
+            principal.set(entry.getKey(),entry.getValue());
+        }
         
         return principal;
-    }
-
-    protected String toStringOrNull(Object o){
-        return o==null?null:Objects.toString(o);
     }
     
     protected String parseJwtToken(String token) throws UnsupportedEncodingException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException, InvalidKeyException {
@@ -130,7 +129,8 @@ class AuthenticatorImpl implements Authenticator {
             // 验证失败
         } else {
             // 验证成功
-            byte[] decodes = Base64.getUrlDecoder().decode(payload.getBytes(CharsetName.UTF8));
+            
+            byte[] decodes = Base64.decode(payload.getBytes(CharsetName.UTF8));
             String info = new String(decodes);
             return info;
         }
@@ -143,7 +143,7 @@ class AuthenticatorImpl implements Authenticator {
     
     // 用公钥校验token的有效性
     protected boolean verifySignature(String content, String signed) throws SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException {
-        byte[] signedData = Base64.getUrlDecoder().decode(signed.getBytes(CharsetName.UTF8));
+        byte[] signedData = Base64.decode(signed.getBytes(CharsetName.UTF8));
         byte[] contentData = content.getBytes();
 
         Signature signature = Signature.getInstance("SHA256withRSA");
@@ -172,7 +172,8 @@ class AuthenticatorImpl implements Authenticator {
     }
     // 生成校验用的公钥
     protected RSAPublicKey decodePublicKey(String base64) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(Base64.getMimeDecoder().decode(base64));
+        
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(Base64.decode(base64));
         KeyFactory f = KeyFactory.getInstance("RSA");
         return (RSAPublicKey) f.generatePublic(spec);
     }

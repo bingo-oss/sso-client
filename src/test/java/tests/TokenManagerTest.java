@@ -61,6 +61,11 @@ public class TokenManagerTest {
         public String getSSOInnerPublicKeyEndpoint() {
             return null;
         }
+
+        @Override
+        public String getLogoutEndpoint() {
+            return null;
+        }
     });
     @Test
     public void testVerifyIdToken(){

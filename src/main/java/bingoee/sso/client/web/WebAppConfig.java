@@ -6,7 +6,9 @@ package bingoee.sso.client.web;
 public interface WebAppConfig {
     String getSSOEndpoint();
     String getSSOInnerEndpoint();
+    
     String getAuthorizationEndpoint();
+    String getLogoutEndpoint();
     
     String getSSOTokenEndpoint();
     String getSSOInnerTokenEndpoint();

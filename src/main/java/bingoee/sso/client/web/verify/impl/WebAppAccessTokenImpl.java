@@ -15,7 +15,7 @@ public class WebAppAccessTokenImpl implements WebAppAccessToken {
     private String rt;
     private long createdAt;
     private int expiresIn;
-    private Map<String, Object> ext = new HashMap<>();
+    private Map<String, Object> ext = new HashMap<String, Object>();
     
     public WebAppAccessTokenImpl(String at, String rt, int expiresIn) {
         this.at = at;

@@ -42,8 +42,8 @@ class TokenManagerImpl implements TokenManager {
     @Override
     public IdToken verifyIdToken(String idToken) {
         Map<String, Object> claim = signer.verify(idToken);
-        String clientId = Strings.nullOrToString(claim.get("aud"));
-        String userId = Strings.nullOrToString(claim.get("sub"));
+        final String clientId = Strings.nullOrToString(claim.get("aud"));
+        final String userId = Strings.nullOrToString(claim.get("sub"));
         IdToken it = new IdToken() {
             @Override
             public String getClientId() {
@@ -81,41 +81,70 @@ class TokenManagerImpl implements TokenManager {
             sb.append("&");
             sb.append("client_secret="+client.getSecret());
             
-            //connection.connect();
-            
-            try (OutputStream os = connection.getOutputStream()){
+            connection.connect();
+            OutputStream os = null;
+            InputStream is = null;
+            InputStreamReader isr = null;
+            BufferedReader reader = null;
+            try{
+                os = connection.getOutputStream();
                 os.write(sb.toString().getBytes(CharsetName.UTF8));
                 os.flush();
                 int respCode = connection.getResponseCode();
                 if(respCode == HttpURLConnection.HTTP_OK){
-                    try (InputStream is = connection.getInputStream();
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(is, CharsetName.UTF8))){
-                        
-                        StringBuilder json = new StringBuilder();
-                        reader.lines().forEach(s -> json.append(s));
-                        JSONObject object = JSON.parseObject(json.toString());
-                        String at = Strings.nullOrToString(object.remove("access_token"));
-                        String rt = Strings.nullOrToString(object.remove("refresh_token"));
-                        String exp = Strings.nullOrToString(object.remove("expires_in"));
-                        int expiresIn = exp == null?0:Integer.parseInt(exp);
-                        WebAppAccessTokenImpl token = new WebAppAccessTokenImpl(at,rt,expiresIn);
-                        object.entrySet().forEach(entry -> token.put(entry.getKey(),entry.getValue()));
-                        return token;
+                    is = connection.getInputStream();
+                    isr = new InputStreamReader(is, CharsetName.UTF8);
+                    reader = new BufferedReader(isr);
+                    StringBuilder json = new StringBuilder();
+                    do {
+                        String line = reader.readLine();
+                        if(line == null){
+                            break;
+                        }
+                        json.append(line);
+                    }while (true);
+                    JSONObject object = JSON.parseObject(json.toString());
+                    String at = Strings.nullOrToString(object.remove("access_token"));
+                    String rt = Strings.nullOrToString(object.remove("refresh_token"));
+                    String exp = Strings.nullOrToString(object.remove("expires_in"));
+                    int expiresIn = exp == null?0:Integer.parseInt(exp);
+                    WebAppAccessTokenImpl token = new WebAppAccessTokenImpl(at,rt,expiresIn);
+
+                    for(Map.Entry<String,Object> entry : object.entrySet()){
+                        token.put(entry.getKey(),entry.getValue());
                     }
+                    return token;
                 }else {
                     log.error("fetch access token error: response code is " + respCode);
-                    try (InputStream is = connection.getErrorStream()){
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(is, CharsetName.UTF8));
-                        StringBuilder error = new StringBuilder();
-                        reader.lines().forEach(s -> error.append(s));
-                        log.error("fetch access token error: response code is " + respCode);
-                        log.error("fetch access token error: " + error.toString());
-                        reader.close();
-                        throw new IllegalStateException(error.toString());
-                    }
+                    is = connection.getErrorStream();
+                    isr = new InputStreamReader(is, CharsetName.UTF8);
+                    reader = new BufferedReader(isr);
+                    StringBuilder error = new StringBuilder();
+                    do {
+                        String line = reader.readLine();
+                        if(line == null){
+                            break;
+                        }
+                        error.append(line);
+                    }while (true);
+                    log.error("fetch access token error: response code is " + respCode);
+                    log.error("fetch access token error: " + error.toString());
+                    reader.close();
+                    throw new IllegalStateException(error.toString());
                 }
-                
             }finally {
+                if(reader != null){
+                    reader.close();
+                }
+                if(isr != null){
+                    isr.close();
+                }
+                if (is != null){
+                    is.close();
+                }
+                if (os != null){
+                    os.close();
+                }
                 connection.disconnect();
             }
         } catch (MalformedURLException e) {

@@ -15,6 +15,7 @@ class WebAppConfigImpl implements WebAppConfig {
     private String ssoTokenEndpoint;
     private String ssoInnerTokenEndpoint;
     private String authorizationEndpoint;
+    private String logoutEndpoint;
     private String ssoPublicKeyEndpoint;
     private String ssoInnerPublicKeyEndpoint;
     private Client client;
@@ -33,6 +34,7 @@ class WebAppConfigImpl implements WebAppConfig {
         }
         
         authorizationEndpoint = ssoEndpoint +"/oauth2/authorize";
+        logoutEndpoint = ssoEndpoint + "/oauth2/logout";
         
         ssoPublicKeyEndpoint = ssoEndpoint + "/get_public_key";
         ssoInnerPublicKeyEndpoint = ssoInnerEndpoint + "/get_public_key";
@@ -40,8 +42,8 @@ class WebAppConfigImpl implements WebAppConfig {
         ssoTokenEndpoint = ssoEndpoint + "/oauth2/token";
         ssoInnerTokenEndpoint = ssoInnerEndpoint + "/oauth2/token";
 
-        String clientId = config.getInitParameter("clientId");
-        String clientSecret = config.getInitParameter("clientSecret");
+        final String clientId = config.getInitParameter("clientId");
+        final String clientSecret = config.getInitParameter("clientSecret");
         if(Strings.isEmpty(clientId)){
             
         }
@@ -73,6 +75,11 @@ class WebAppConfigImpl implements WebAppConfig {
     @Override
     public String getAuthorizationEndpoint() {
         return authorizationEndpoint;
+    }
+
+    @Override
+    public String getLogoutEndpoint() {
+        return logoutEndpoint;
     }
 
     @Override
