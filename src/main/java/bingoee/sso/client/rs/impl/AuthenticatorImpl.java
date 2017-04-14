@@ -1,6 +1,7 @@
 package bingoee.sso.client.rs.impl;
 
 
+import bingoee.sso.client.CharsetName;
 import bingoee.sso.client.rs.Authenticator;
 import bingoee.sso.client.rs.Principal;
 import com.alibaba.fastjson.JSON;
@@ -129,7 +130,7 @@ class AuthenticatorImpl implements Authenticator {
             // 验证失败
         } else {
             // 验证成功
-            byte[] decodes = Base64.getUrlDecoder().decode(payload.getBytes("UTF-8"));
+            byte[] decodes = Base64.getUrlDecoder().decode(payload.getBytes(CharsetName.UTF8));
             String info = new String(decodes);
             return info;
         }
@@ -142,12 +143,15 @@ class AuthenticatorImpl implements Authenticator {
     
     // 用公钥校验token的有效性
     protected boolean verifySignature(String content, String signed) throws SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException {
-        byte[] signedData = Base64.getUrlDecoder().decode(signed.getBytes("UTF-8"));
+        byte[] signedData = Base64.getUrlDecoder().decode(signed.getBytes(CharsetName.UTF8));
         byte[] contentData = content.getBytes();
 
         Signature signature = Signature.getInstance("SHA256withRSA");
         if(publicKey == null || publicKey.trim().isEmpty()){
             refreshPublicKey();
+        }
+        if(publicKey == null){
+            throw new NullPointerException("publicKey is null!");
         }
         signature.initVerify(decodePublicKey(publicKey));
         signature.update(contentData);

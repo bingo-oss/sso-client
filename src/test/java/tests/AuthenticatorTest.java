@@ -7,7 +7,6 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import sun.dc.pr.PRError;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.DispatcherType;
@@ -30,14 +29,18 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.any;
+import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 
 /**
  * Created by kael on 2017/4/7.
  */
 public class AuthenticatorTest {
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule(8080);
+    public WireMockRule wireMockRule = new WireMockRule(9999);
     @Test
     public void testExtractToken() {
         Authenticator authenticator = AuthenticatorFactory.generateByPublicKey("");
@@ -74,7 +77,7 @@ public class AuthenticatorTest {
                         .withHeader("Content-Type", "text/plain")
                         .withBody(publicKey)));
 
-        authenticator = AuthenticatorFactory.generateByPublicKeyUrl("http://localhost:8080/get_public_key");
+        authenticator = AuthenticatorFactory.generateByPublicKeyUrl("http://localhost:9999/get_public_key");
         principal = authenticator.verifyToken(jwtToken);
         assertPrincipal(principal);
     }
