@@ -195,3 +195,16 @@ public class LoginFilter implements Filter {
 ```
 
 这里`returnUrl`参数的值是`http://www.baidu.com/`的url编码结果，登录完成后会跳转到百度的首页。
+
+
+### 单点注销
+
+单点登录完成后，需要做单点注销，单点注销的流程在`openId Connect`中并没有定义，因此这里的注销规范是品高的sso注销规范，在单点登录的集成完成后，单点注销只需要访问如下地址：
+
+```
+GET /sso_client/oauth2_logout
+```
+
+此时sso会将当前设备登录的所有应用都自动注销。
+
+> **注意**：单点注销依赖的是应用在向sso申请注册的时候填写的注销信息，在向sso申请注册应用的时候，需要填写应用的注销地址，在单点注销时，sso会发一个http请求到应用的注销地址实现应用注销。
