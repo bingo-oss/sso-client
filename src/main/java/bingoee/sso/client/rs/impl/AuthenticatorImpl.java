@@ -172,7 +172,6 @@ class AuthenticatorImpl implements Authenticator {
     }
     // 生成校验用的公钥
     protected RSAPublicKey decodePublicKey(String base64) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        
         X509EncodedKeySpec spec = new X509EncodedKeySpec(Base64.decode(base64));
         KeyFactory f = KeyFactory.getInstance("RSA");
         return (RSAPublicKey) f.generatePublic(spec);
