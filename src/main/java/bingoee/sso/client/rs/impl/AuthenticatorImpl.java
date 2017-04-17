@@ -130,7 +130,7 @@ class AuthenticatorImpl implements Authenticator {
         } else {
             // 验证成功
             
-            byte[] decodes = Base64.decode(payload.getBytes(CharsetName.UTF8));
+            byte[] decodes = Base64.urlDecode(payload);
             String info = new String(decodes);
             return info;
         }
@@ -143,8 +143,8 @@ class AuthenticatorImpl implements Authenticator {
     
     // 用公钥校验token的有效性
     protected boolean verifySignature(String content, String signed) throws SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException {
-        byte[] signedData = Base64.decode(signed.getBytes(CharsetName.UTF8));
-        byte[] contentData = content.getBytes();
+        byte[] signedData = Base64.urlDecode(signed);
+        byte[] contentData = content.getBytes(CharsetName.UTF8);
 
         Signature signature = Signature.getInstance("SHA256withRSA");
         if(publicKey == null || publicKey.trim().isEmpty()){
@@ -172,7 +172,7 @@ class AuthenticatorImpl implements Authenticator {
     }
     // 生成校验用的公钥
     protected RSAPublicKey decodePublicKey(String base64) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(Base64.decode(base64));
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(Base64.mimeDecode(base64));
         KeyFactory f = KeyFactory.getInstance("RSA");
         return (RSAPublicKey) f.generatePublic(spec);
     }
