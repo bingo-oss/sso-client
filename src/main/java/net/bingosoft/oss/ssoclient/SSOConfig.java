@@ -107,7 +107,7 @@ public class SSOConfig {
         }
 
         //todo :
-        this.publicKeyEndpointUrl = baseUrl + "/public_key";
+        this.publicKeyEndpointUrl = baseUrl + "/get_public_key";
         this.tokenInfoEndpointUrl = baseUrl + "/tokeninfo";
 
         return this;

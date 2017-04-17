@@ -16,5 +16,69 @@
 
 package net.bingosoft.oss.ssoclient.internal;
 
+import bingoee.sso.client.*;
+import net.bingosoft.oss.ssoclient.exception.InvalidTokenException;
+import net.bingosoft.oss.ssoclient.exception.TokenExpiredException;
+
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.Signature;
+import java.security.SignatureException;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Map;
+
 public class JWT {
+    
+    public static final String DEF_CHARSET = "UTF-8";
+    public static final String ALGORITHM = "SHA256withRSA";
+    
+    public static Map<String, Object> verity(String jwt, String pk) throws InvalidTokenException, TokenExpiredException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException {
+        String[] parts = jwt.split("\\.");
+
+        String content;
+        String payload;
+        String signature;
+
+        content = parts[0] + "." + parts[1];
+        payload = parts[1];
+        signature = parts[2];
+        
+        if(verifySignature(content,signature,pk)){
+            String json = new String(Base64.urlDecode(payload), DEF_CHARSET);
+            return JSON.decodeToMap(json);
+        }
+        throw new InvalidTokenException(jwt);
+    }
+    
+    private static boolean verifySignature(String content, String signed, String pk) throws SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException {
+        byte[] signedData = Base64.urlDecode(signed);
+        byte[] contentData = content.getBytes(CharsetName.UTF8);
+
+        Signature signature = Signature.getInstance(ALGORITHM);
+        
+        if(pk == null){
+            throw new NullPointerException("publicKey is null!");
+        }
+        signature.initVerify(decodePublicKey(pk));
+        signature.update(contentData);
+        try {
+            boolean verified = signature.verify(signedData);
+            if(verified){
+                return true;
+            }
+        } catch (SignatureException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    private static RSAPublicKey decodePublicKey(String base64) throws NoSuchAlgorithmException, InvalidKeySpecException, UnsupportedEncodingException {
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(Base64.mimeDecode(base64));
+        KeyFactory f = KeyFactory.getInstance("RSA");
+        return (RSAPublicKey) f.generatePublic(spec);
+    }
 }

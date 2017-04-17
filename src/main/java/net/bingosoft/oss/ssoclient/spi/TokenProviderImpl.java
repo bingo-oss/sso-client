@@ -16,14 +16,56 @@
 
 package net.bingosoft.oss.ssoclient.spi;
 
+import bingoee.sso.client.Strings;
+import net.bingosoft.oss.ssoclient.SSOConfig;
+import net.bingosoft.oss.ssoclient.exception.TokenExpiredException;
+import net.bingosoft.oss.ssoclient.internal.HttpClient;
+import net.bingosoft.oss.ssoclient.internal.JWT;
 import net.bingosoft.oss.ssoclient.model.Authentication;
+
+import java.util.Map;
 
 public class TokenProviderImpl implements TokenProvider {
 
+    private SSOConfig config;
+    private String pk;
+
+    public TokenProviderImpl(SSOConfig config) {
+        this.config = config;
+        this.pk = HttpClient.get(config.getPublicKeyEndpointUrl());
+    }
+
     @Override
     public Authentication verifyJwtAccessToken(String accessToken) {
-        //todo :
-        return null;
+        Map<String, Object> map;
+        try {
+            map = JWT.verity(accessToken, pk);
+        } catch (Throwable e) {
+            String newPk = HttpClient.get(config.getPublicKeyEndpointUrl());
+            if(newPk != null && newPk.equals(pk)){
+                throw new RuntimeException(e);
+            }
+            pk = newPk;
+            try {
+                map = JWT.verity(accessToken, pk);
+            } catch (Throwable e1) {
+                throw new RuntimeException(e1);
+            }
+        }
+        Authentication authentication = new Authentication();
+        authentication.setUserId(Strings.nullOrToString(map.remove("user_id")));
+        authentication.setClientId(Strings.nullOrToString(map.remove("client_id")));
+        authentication.setScope(Strings.nullOrToString(map.remove("scope")));
+        authentication.setUsername(Strings.nullOrToString(map.remove("username")));
+        
+        String expiresIn = Strings.nullOrToString(map.remove("expires_in"));
+        authentication.setExpiresIn(expiresIn == null?0:Integer.parseInt(expiresIn));
+        
+        if(authentication.isExpired()){
+            throw new TokenExpiredException(accessToken);
+        }
+        
+        return authentication;
     }
 
     @Override

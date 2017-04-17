@@ -16,5 +16,38 @@
 
 package net.bingosoft.oss.ssoclient.internal;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 public class HttpClient {
+    /**
+     * 使用http get方法调用指定url并返回结果
+     * @param url
+     * @return
+     */
+    public static String get(String url){
+        try {
+            HttpURLConnection connection = (HttpURLConnection)new URL(url).openConnection();
+            connection.setConnectTimeout(3000);
+            connection.connect();
+            InputStream is = connection.getInputStream();
+            StringBuilder sb = new StringBuilder();
+            do{
+                int i = is.read();
+                if(i == -1){
+                    break;
+                }
+                sb.append((char)i);
+            }while (true);
+            if(sb.length() > 0){
+                return sb.toString();
+            }
+            throw new IOException("public key get from "+url+" is empty!");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
 }

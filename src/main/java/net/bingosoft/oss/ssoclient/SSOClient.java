@@ -117,7 +117,7 @@ public class SSOClient {
         if(null == tokenProvider) {
             synchronized (this) {
                 if(null == tokenProvider) {
-                    tokenProvider = new TokenProviderImpl();
+                    tokenProvider = new TokenProviderImpl(getConfig());
                 }
             }
         }

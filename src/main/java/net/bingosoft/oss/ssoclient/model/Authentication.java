@@ -25,6 +25,7 @@ public class Authentication {
     protected String username;
     protected String clientId;
     protected String scope;
+    protected int    expiresIn;
 
     public String getUserId() {
         return userId;
@@ -58,9 +59,12 @@ public class Authentication {
         this.scope = scope;
     }
 
+    public void setExpiresIn(int expiresIn) {
+        this.expiresIn = expiresIn;
+    }
+
     public int getExpiresIn() {
-        //todo :
-        return 0;
+        return expiresIn;
     }
 
     public boolean isExpired() {

@@ -1,13 +1,13 @@
 package bingoee.sso.client.rs.impl;
 
 
-import bingoee.sso.client.Base64;
 import bingoee.sso.client.CharsetName;
 import bingoee.sso.client.Strings;
 import bingoee.sso.client.rs.Authenticator;
 import bingoee.sso.client.rs.Principal;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import net.bingosoft.oss.ssoclient.internal.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -155,14 +155,7 @@ class AuthenticatorImpl implements Authenticator {
         }
         signature.initVerify(decodePublicKey(publicKey));
         signature.update(contentData);
-        try {
-            boolean verified = signature.verify(signedData);
-            if(verified){
-                return true;
-            }
-        } catch (SignatureException e) {
-            e.printStackTrace();
-        }
+        
         if(refreshPublicKey()){
             signature.initVerify(decodePublicKey(publicKey));
             signature.update(contentData);
@@ -171,7 +164,7 @@ class AuthenticatorImpl implements Authenticator {
         return false;
     }
     // 生成校验用的公钥
-    protected RSAPublicKey decodePublicKey(String base64) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    protected RSAPublicKey decodePublicKey(String base64) throws NoSuchAlgorithmException, InvalidKeySpecException, UnsupportedEncodingException {
         X509EncodedKeySpec spec = new X509EncodedKeySpec(Base64.mimeDecode(base64));
         KeyFactory f = KeyFactory.getInstance("RSA");
         return (RSAPublicKey) f.generatePublic(spec);

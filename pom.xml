@@ -135,6 +135,7 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
+            <version>${fastjson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -142,7 +143,13 @@
             <version>${slf4j.version}</version>
             <type>jar</type>
         </dependency>
-
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.10</version>
+        </dependency>
+        
+        
         <!-- test -->
         <dependency>
             <groupId>junit</groupId>

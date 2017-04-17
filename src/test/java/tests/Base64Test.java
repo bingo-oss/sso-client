@@ -1,7 +1,6 @@
 package tests;
 
-import bingoee.sso.client.Base64;
-import bingoee.sso.client.CharsetName;
+import net.bingosoft.oss.ssoclient.internal.Base64;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -12,12 +11,12 @@ import java.io.UnsupportedEncodingException;
  */
 public class Base64Test {
     @Test
-    public void testMimeDecode(){
+    public void testMimeDecode() throws UnsupportedEncodingException {
         String pk = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDDASOjIWexLpnXiJNJF2pL6NzP\n" +
                 "fBoF0tKEr2ttAkJ/7f3uUHhj2NIhQ01Wu9OjHfXjCvQSXMWqqc1+O9G1UwB2Xslb\n" +
                 "WNwEZFMwmQdP5VleGbJLR3wOl3IzdggkxBJ1Q9rXUlVtslK/CsMtkwkQEg0eZDH1\n" +
                 "VeJXqKBlEhsNckYIGQIDAQAB";
-        byte[] bytesJdk6 = Base64.mimeDecode(pk);
+        byte[] bytesJdk6 = Base64.urlDecode(pk);
         //byte[] bytesJdk8 = java.util.Base64.getMimeDecoder().decode(pk);
         byte[] bytesJdk8 = new byte[]{48,-127,-97,48,13,6,9,42,-122,72,-122,-9,13,
                 1,1,1,5,0,3,-127,-115,0,48,-127,-119,2,-127,-127,0,-61,1,35,-93,
