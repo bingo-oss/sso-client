@@ -6,11 +6,11 @@
 
     <groupId>net.bingosoft.oss</groupId>
     <artifactId>sso-client</artifactId>
-    <version>3.1.3-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>sso-client</name>
-    <description>sso client sdk for bingosoft's single-sign-on product.</description>
+    <description>sso client sdk for bingosoft's single-sign-on server.</description>
     <url>https://github.com/bingo-oss/sso-client</url>
 
     <licenses>
@@ -46,44 +46,13 @@
         </repository>
     </distributionManagement>
 
-    <!--<profiles>-->
-        <!--<profile>-->
-            <!--<id>release-sign-artifacts</id>-->
-            <!--<activation>-->
-                <!--<property>-->
-                    <!--<name>performRelease</name>-->
-                    <!--<value>true</value>-->
-                <!--</property>-->
-            <!--</activation>-->
-            <!--<build>-->
-                <!--<plugins>-->
-                    <!--<plugin>-->
-                        <!--<groupId>org.apache.maven.plugins</groupId>-->
-                        <!--<artifactId>maven-gpg-plugin</artifactId>-->
-                        <!--<version>1.5</version>-->
-                        <!--<executions>-->
-                            <!--<execution>-->
-                                <!--<id>sign-artifacts</id>-->
-                                <!--<phase>verify</phase>-->
-                                <!--<goals>-->
-                                    <!--<goal>sign</goal>-->
-                                <!--</goals>-->
-                            <!--</execution>-->
-                        <!--</executions>-->
-                    <!--</plugin>-->
-                <!--</plugins>-->
-            <!--</build>-->
-        <!--</profile>-->
-    <!--</profiles>-->
-    
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>1.6</java.version>
         <common.encoding>UTF-8</common.encoding>
 
         <slf4j.version>1.7.5</slf4j.version>
         <logback.version>1.0.13</logback.version>
-        <fastjson.version>1.2.31</fastjson.version>
-        
+
         <plugins.compiler.version>2.3.2</plugins.compiler.version>
         <maven.compile.source>${java.version}</maven.compile.source>
         <maven.compile.target>${java.version}</maven.compile.target>
@@ -156,7 +125,6 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>${fastjson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -164,19 +132,19 @@
             <version>${slf4j.version}</version>
             <type>jar</type>
         </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
-            <type>jar</type>
-            <scope>provided</scope>
-        </dependency>
 
         <!-- test -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+            <type>jar</type>
             <scope>test</scope>
         </dependency>
         <dependency>
