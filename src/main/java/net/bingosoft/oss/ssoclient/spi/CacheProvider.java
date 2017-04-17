@@ -18,5 +18,9 @@ package net.bingosoft.oss.ssoclient.spi;
 
 public interface CacheProvider {
 
+    <T> T get(String key);
 
+    void put(String key, Object item, long expires);
+
+    void remove(String key);
 }

@@ -26,6 +26,8 @@ public class SSOConfig {
     protected String publicKeyEndpointUrl;
     protected String tokenInfoEndpointUrl;
 
+    //todo :
+
     public SSOConfig() {
 
     }

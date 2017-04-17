@@ -15,3 +15,6 @@
  */
 
 package net.bingosoft.oss.ssoclient.internal;
+
+public class HttpClient {
+}

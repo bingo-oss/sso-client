@@ -14,14 +14,7 @@
  *  limitations under the License.
  */
 
-package net.bingosoft.oss.ssoclient.spi;
+package net.bingosoft.oss.ssoclient.internal;
 
-import net.bingosoft.oss.ssoclient.model.Authentication;
-
-public interface TokenProvider {
-
-    Authentication verifyJwtAccessToken(String accessToken);
-
-    Authentication verifyBearerAccessToken(String accessToken);
-
+public class JWT {
 }

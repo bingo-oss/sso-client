@@ -16,9 +16,28 @@
 
 package net.bingosoft.oss.ssoclient.spi;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * {@link CacheProvider}的简单默认实现.
  */
 public class CacheProviderImpl implements CacheProvider {
 
+    protected final Map<String,Object> map = new ConcurrentHashMap<String, Object>();
+
+    @Override
+    public <T> T get(String key) {
+        return (T)map.get(key);
+    }
+
+    @Override
+    public void put(String key, Object item, long expires) {
+        //todo :
+    }
+
+    @Override
+    public void remove(String key) {
+        //todo :
+    }
 }

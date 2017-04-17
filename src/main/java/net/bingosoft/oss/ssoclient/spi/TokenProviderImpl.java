@@ -16,6 +16,19 @@
 
 package net.bingosoft.oss.ssoclient.spi;
 
+import net.bingosoft.oss.ssoclient.model.Authentication;
+
 public class TokenProviderImpl implements TokenProvider {
+
+    @Override
+    public Authentication verifyJwtAccessToken(String accessToken) {
+        //todo :
+        return null;
+    }
+
+    @Override
+    public Authentication verifyBearerAccessToken(String accessToken) {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
 }

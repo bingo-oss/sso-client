@@ -54,7 +54,28 @@ public class SSOClient {
      * @throws TokenExpiredException
      */
     public Authentication verifyAccessToken(String accessToken) throws InvalidTokenException, TokenExpiredException{
-        return null;
+        CacheProvider cp = cp();
+
+        Authentication authc = cp.get(accessToken);
+        if(null != authc) {
+            if(!authc.isExpired()) {
+                return authc;
+            }else{
+                cp.remove(accessToken);
+            }
+        }
+
+        //check is jwt token?
+        boolean jwt = checkJwtToken(accessToken);
+        if(jwt) {
+            authc = tp().verifyJwtAccessToken(accessToken);
+        }else{
+            authc = tp().verifyBearerAccessToken(accessToken);
+        }
+
+        cp.put(accessToken, authc, authc.getExpiresIn());
+
+        return authc;
     }
 
     /**
@@ -77,7 +98,11 @@ public class SSOClient {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    protected final CacheProvider caches() {
+    protected boolean checkJwtToken(String accessToken) {
+        return accessToken.contains(".");
+    }
+
+    protected final CacheProvider cp() {
         if(null == cacheProvider) {
             synchronized (this) {
                 if(null == cacheProvider) {
@@ -88,7 +113,7 @@ public class SSOClient {
         return cacheProvider;
     }
 
-    protected final TokenProvider tokens() {
+    protected final TokenProvider tp() {
         if(null == tokenProvider) {
             synchronized (this) {
                 if(null == tokenProvider) {
@@ -100,6 +125,14 @@ public class SSOClient {
     }
 
     //================================ getters & setters ======================================
+
+    public SSOConfig getConfig() {
+        return config;
+    }
+
+    public void setConfig(SSOConfig config) {
+        this.config = config;
+    }
 
     public CacheProvider getCacheProvider() {
         return cacheProvider;
@@ -117,11 +150,4 @@ public class SSOClient {
         this.tokenProvider = tokenProvider;
     }
 
-    public SSOConfig getConfig() {
-        return config;
-    }
-
-    public void setConfig(SSOConfig config) {
-        this.config = config;
-    }
 }

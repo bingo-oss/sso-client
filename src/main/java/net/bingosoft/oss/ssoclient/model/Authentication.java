@@ -57,4 +57,14 @@ public class Authentication {
     public void setScope(String scope) {
         this.scope = scope;
     }
+
+    public int getExpiresIn() {
+        //todo :
+        return 0;
+    }
+
+    public boolean isExpired() {
+        //todo :
+        return false;
+    }
 }
