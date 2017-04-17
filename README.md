@@ -18,7 +18,7 @@
 
 * 打包使用
 
-如果不是使用maven安装工程，需要自己打包jar包，这个sdk需要三个外部依赖：
+如果不是使用maven安装工程，需要自己打包jar包，这个sdk需要几个外部依赖：
 
 ```xml
 <dependency>
@@ -33,10 +33,9 @@
 	<type>jar</type>
 </dependency>
 <dependency>
-	<groupId>org.slf4j</groupId>
-	<artifactId>jcl-over-slf4j</artifactId>
-	<version>1.7.5</version>
-	<type>jar</type>
+	<groupId>commons-codec</groupId>
+	<artifactId>commons-codec</artifactId>
+	<version>1.10</version>
 </dependency>
 ```
 
@@ -46,8 +45,10 @@
 
 * fastjson: [下载](http://repo1.maven.org/maven2/com/alibaba/fastjson/1.2.31/fastjson-1.2.31.jar)
 * slf4j: [下载](https://www.slf4j.org/dist/slf4j-1.7.5.zip)
+* commons-codec: [下载](http://mirrors.tuna.tsinghua.edu.cn/apache//commons/codec/binaries/commons-codec-1.10-bin.zip)
 
-在slf4j的压缩包里，将`slf4j-api-1.7.5.jar`和`jcl-over-slf4j-1.7.5.jar`两个包拷贝到依赖库即可。
+在slf4j的压缩包里，将`slf4j-api-1.7.5.jar`这个包拷贝到依赖库即可。
+在commons-codec-1.10-bin.zip压缩包中，将commons-codec-1.10.jar这个包拷贝到依赖库即可。 
 
 > 这里sdk使用的日志是slf4j日志框架，可以使用任何实现该框架的日志实现如log4j或者logback。
 
@@ -259,7 +260,7 @@ Authenticator authenticator = AuthenticatorFactory.generateByPublicKeyUrl(urlStr
 
 通过公钥创建校验器适用于公钥已知，并且确定不会变化的情况，创建后即可以进行校验。
 
-公共公钥获取URL创建的校验器适用于公钥未知，但是可以通过http url获取的情况，这种情况校验器在第一次进行校验时，会先通过url获取公钥后再进行校验。
+通过公钥获取URL创建的校验器适用于公钥未知，但是可以通过http url获取的情况，这种情况校验器在第一次进行校验时，会先通过url获取公钥后再进行校验。
 
 校验器校验的结果是`Principal`对象，这个对象包含了JWT中包含的全部信息，如userId，clientId等，如果校验失败则会抛出异常。
 
