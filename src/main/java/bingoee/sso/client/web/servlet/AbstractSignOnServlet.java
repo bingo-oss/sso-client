@@ -117,6 +117,7 @@ public abstract class AbstractSignOnServlet extends HttpServlet {
      */
     protected void localLogout(HttpServletRequest req, HttpServletResponse resp){}
     
+    protected String buildReturnUrl(HttpServletRequest req){return null;}
     
     protected String buildLoginUrl(HttpServletRequest req){
         String loginUrl = Urls.addQueryString(config.getAuthorizationEndpoint(),"response_type","code id_token");
@@ -141,11 +142,21 @@ public abstract class AbstractSignOnServlet extends HttpServlet {
     protected String buildRedirectUri(HttpServletRequest req){
         String redirectUri = req.getRequestURL().toString();
         
-        String returnUrl = req.getParameter(RETURN_URL_PARAM);
+        String queryString = req.getQueryString();
+        if(!Strings.isEmpty(queryString)){
+            redirectUri+="?"+queryString;
+        }
+        
+        String returnUrl = buildReturnUrl(req);
+        if(Strings.isEmpty(returnUrl)){
+            returnUrl = req.getParameter(RETURN_URL_PARAM);
+        }
+        
         if(Strings.isEmpty(returnUrl)){
             returnUrl = req.getContextPath();
         }
         redirectUri = Urls.addQueryString(redirectUri,RETURN_URL_PARAM, returnUrl);
+        
         return redirectUri;
     }
     
