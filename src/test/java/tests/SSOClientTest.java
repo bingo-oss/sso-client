@@ -37,12 +37,11 @@ public class SSOClientTest {
     @Test
     public void testVerifyAccessToken(){
         stubFor(get(anyUrl()).willReturn(aResponse().withStatus(200).withBody(publicKey)));
-        
         Authentication authc = client.verifyAccessToken(jwtToken);
         assertAuthc(authc);
         Assert.assertTrue(authc == client.verifyAccessToken(jwtToken));
-
     }
+    
     protected void assertAuthc(Authentication authc){
         Assert.assertEquals("43FE6476-CD7B-493B-8044-C7E3149D0876", authc.getUserId());
         Assert.assertEquals("admin", authc.getUsername());
@@ -50,4 +49,14 @@ public class SSOClientTest {
         Assert.assertEquals("console", authc.getClientId());
         Assert.assertEquals(23694, authc.getExpiresIn());
     }
+    @Test
+    public void testAuthenticationExpired() throws InterruptedException {
+        stubFor(get(anyUrl()).willReturn(aResponse().withStatus(200).withBody(publicKey)));
+        Authentication authc = client.verifyAccessToken(jwtToken);
+        assertAuthc(authc);
+        authc.setExpiresIn(10);
+        Thread.sleep(15);
+        Assert.assertTrue(authc != client.verifyAccessToken(jwtToken));
+    }
+    
 }
