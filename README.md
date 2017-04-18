@@ -26,7 +26,7 @@ fastjson | 1.2.31+ | JSON解析
 slf4j    | 1.7.5+  | 程序日志       
 commons-codec | 1.10+ | Base64解码 
 
-##使用
+## 使用
 
 品高单点登录遵循[OAuth 2.0](https://tools.ietf.org/html/rfc6749)和[Open ID Connect Core](http://openid.net/specs/openid-connect-core-1_0.html)协议，使用之前了解相关概念有助于更好的理解。
 
