@@ -17,67 +17,64 @@
 package net.bingosoft.oss.ssoclient.internal;
 
 import net.bingosoft.oss.ssoclient.exception.InvalidTokenException;
-import net.bingosoft.oss.ssoclient.exception.TokenExpiredException;
 
 import java.io.UnsupportedEncodingException;
-import java.security.InvalidKeyException;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.interfaces.RSAPublicKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Map;
 
 public class JWT {
-    
+
     public static final String UTF_8 = "UTF-8";
     public static final String ALGORITHM = "SHA256withRSA";
-    
-    public static Map<String, Object> verity(String jwt, String pk) throws InvalidTokenException, TokenExpiredException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException {
-        String[] parts = jwt.split("\\.");
 
-        String content;
-        String payload;
-        String signature;
+    /**
+     * 如果token验证不正确,返回<code>null</code>
+     *
+     * @throws InvalidTokenException 如果token的格式不正确
+     */
+    public static Map<String, Object> verity(String token, RSAPublicKey pk) throws InvalidTokenException {
+        String[] parts = token.split("\\.");
+        if(parts.length != 3) {
+            throw new InvalidTokenException("Invalid jwt token"); //todo : detail error message.
+        }
 
-        content = parts[0] + "." + parts[1];
-        payload = parts[1];
-        signature = parts[2];
-        
+        String content   = parts[0] + "." + parts[1];
+        String payload   = parts[1];
+        String signature = parts[2];
+
         if(verifySignature(content,signature,pk)){
-            String json = new String(Base64.urlDecode(payload), UTF_8);
-            return JSON.decodeToMap(json);
-        }
-        throw new InvalidTokenException(jwt);
-    }
-    
-    private static boolean verifySignature(String content, String signed, String pk) throws SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException {
-        byte[] signedData = Base64.urlDecode(signed);
-        byte[] contentData = content.getBytes(JWT.UTF_8);
+            try{
+                String json = new String(Base64.urlDecode(payload), UTF_8);
 
-        Signature signature = Signature.getInstance(ALGORITHM);
-        
-        if(pk == null){
-            throw new NullPointerException("publicKey is null!");
-        }
-        signature.initVerify(decodePublicKey(pk));
-        signature.update(contentData);
-        try {
-            boolean verified = signature.verify(signedData);
-            if(verified){
-                return true;
+                return JSON.decodeToMap(json);
+            }catch(UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
             }
-        } catch (SignatureException e) {
-            e.printStackTrace();
+        }else{
+            //不正确返回null
+            return null;
         }
-        return false;
     }
-    
-    private static RSAPublicKey decodePublicKey(String base64) throws NoSuchAlgorithmException, InvalidKeySpecException, UnsupportedEncodingException {
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(Base64.mimeDecode(base64));
-        KeyFactory f = KeyFactory.getInstance("RSA");
-        return (RSAPublicKey) f.generatePublic(spec);
+
+    /**
+     * @throws InvalidTokenException 如果签名的格式不正确
+     */
+    private static boolean verifySignature(String content, String signed, RSAPublicKey pk) throws InvalidTokenException {
+        try {
+            byte[] signedData = Base64.urlDecode(signed);
+            byte[] contentData = content.getBytes(JWT.UTF_8);
+
+            Signature signature = Signature.getInstance(ALGORITHM);
+            signature.initVerify(pk);
+            signature.update(contentData);
+
+            return signature.verify(signedData);
+        }catch (SignatureException e) {
+            throw new InvalidTokenException("Invalid signature", e);
+        }catch (Exception e) {
+            throw new RuntimeException("Verify signature error", e);
+        }
     }
 }

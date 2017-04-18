@@ -17,53 +17,56 @@
 package net.bingosoft.oss.ssoclient.spi;
 
 import net.bingosoft.oss.ssoclient.SSOConfig;
+import net.bingosoft.oss.ssoclient.exception.InvalidTokenException;
 import net.bingosoft.oss.ssoclient.exception.TokenExpiredException;
+import net.bingosoft.oss.ssoclient.internal.Base64;
 import net.bingosoft.oss.ssoclient.internal.HttpClient;
 import net.bingosoft.oss.ssoclient.internal.JWT;
 import net.bingosoft.oss.ssoclient.internal.Strings;
 import net.bingosoft.oss.ssoclient.model.Authentication;
 
+import java.security.KeyFactory;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Map;
 
 public class TokenProviderImpl implements TokenProvider {
 
-    private SSOConfig config;
-    private String pk;
+    private final SSOConfig config;
+
+    private RSAPublicKey publicKey;
 
     public TokenProviderImpl(SSOConfig config) {
         this.config = config;
-        this.pk = HttpClient.get(config.getPublicKeyEndpointUrl());
+
+        this.refreshPublicKey();
     }
 
     @Override
-    public Authentication verifyJwtAccessToken(String accessToken) {
-        Map<String, Object> map;
-        try {
-            map = JWT.verity(accessToken, pk);
-        } catch (Throwable e) {
-            String newPk = HttpClient.get(config.getPublicKeyEndpointUrl());
-            if(newPk != null && newPk.equals(pk)){
-                throw new RuntimeException(e);
-            }
-            pk = newPk;
-            try {
-                map = JWT.verity(accessToken, pk);
-            } catch (Throwable e1) {
-                throw new RuntimeException(e1);
+    public Authentication verifyJwtAccessToken(String accessToken) throws InvalidTokenException {
+        Map<String, Object> map = JWT.verity(accessToken, publicKey);
+        if(null == map) {
+            map = retryVerify(accessToken);
+            if(null == map) {
+                throw new InvalidTokenException("Incorrect token : " + accessToken);
             }
         }
+
+        //验证通过
         Authentication authentication = new Authentication();
-        authentication.setUserId(Strings.nullOrToString(map.remove("user_id")));
-        authentication.setClientId(Strings.nullOrToString(map.remove("client_id")));
-        authentication.setScope(Strings.nullOrToString(map.remove("scope")));
-        authentication.setUsername(Strings.nullOrToString(map.remove("username")));
-        
+        authentication.setUserId((String)map.remove("user_id"));
+        authentication.setUsername((String)map.remove("username"));
+        authentication.setClientId((String)map.remove("client_id"));
+        authentication.setScope((String)map.remove("scope"));
+
         String expiresIn = Strings.nullOrToString(map.remove("expires_in"));
-        authentication.setExpiresIn(expiresIn == null?0:Integer.parseInt(expiresIn));
+        authentication.setExpiresIn(expiresIn == null ? 0 : Integer.parseInt(expiresIn));
         
         if(authentication.isExpired()){
             throw new TokenExpiredException(accessToken);
         }
+
+        //todo : 扩展属性
         
         return authentication;
     }
@@ -73,4 +76,27 @@ public class TokenProviderImpl implements TokenProvider {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    protected Map<String,Object> retryVerify(String accessToken) {
+        //先刷新public key
+        refreshPublicKey();
+
+        //再verify一次
+        return JWT.verity(accessToken, publicKey);
+    }
+
+    protected void refreshPublicKey() {
+        String publicKeyBase64 = HttpClient.get(config.getPublicKeyEndpointUrl());
+
+        this.publicKey = decodePublicKey(publicKeyBase64);
+    }
+
+    private static RSAPublicKey decodePublicKey(String base64) {
+        try{
+            X509EncodedKeySpec spec = new X509EncodedKeySpec(Base64.mimeDecode(base64));
+            KeyFactory f = KeyFactory.getInstance("RSA");
+            return (RSAPublicKey) f.generatePublic(spec);
+        }catch (Exception e) {
+            throw new RuntimeException("Decode public key error", e);
+        }
+    }
 }
