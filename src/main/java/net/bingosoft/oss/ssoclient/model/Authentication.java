@@ -26,6 +26,13 @@ public class Authentication {
     protected String clientId;
     protected String scope;
     protected int    expiresIn;
+    
+    /* ======= Nonstandard attribute ======= */
+    protected long createdAt;
+
+    public Authentication() {
+        this.createdAt = System.currentTimeMillis();
+    }
 
     public String getUserId() {
         return userId;
@@ -68,7 +75,6 @@ public class Authentication {
     }
 
     public boolean isExpired() {
-        //todo :
-        return false;
+        return System.currentTimeMillis() > createdAt+expiresIn;
     }
 }

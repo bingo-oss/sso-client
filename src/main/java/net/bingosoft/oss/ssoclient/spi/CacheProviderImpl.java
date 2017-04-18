@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CacheProviderImpl implements CacheProvider {
 
     protected final Map<String,Object> map = new ConcurrentHashMap<String, Object>();
-
+    
     @Override
     public <T> T get(String key) {
         return (T)map.get(key);
