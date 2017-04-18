@@ -37,7 +37,7 @@
 
     <scm>
         <connection>scm:git:git://github.com/bingo-oss/sso-client.git</connection>
-        <developerConnection>scm:git:ssh://github.com:bingo-oss/sso-client.git</developerConnection>
+        <developerConnection>scm:git:git://github.com:bingo-oss/sso-client.git</developerConnection>
         <url>http://github.com/bingo-oss/sso-client/tree/master</url>
     </scm>
 
