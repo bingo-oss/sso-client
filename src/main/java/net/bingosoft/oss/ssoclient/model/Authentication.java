@@ -16,6 +16,10 @@
 
 package net.bingosoft.oss.ssoclient.model;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * 认证信息
  */
@@ -25,15 +29,11 @@ public class Authentication {
     protected String username;
     protected String clientId;
     protected String scope;
-    protected int    expiresIn;
+    protected long   expires;
     
     /* ======= Nonstandard attribute ======= */
-    protected long createdAt;
-
-    public Authentication() {
-        this.createdAt = System.currentTimeMillis();
-    }
-
+    protected Map<String, Object> ext = new HashMap<String, Object>();
+    
     public String getUserId() {
         return userId;
     }
@@ -66,15 +66,23 @@ public class Authentication {
         this.scope = scope;
     }
 
-    public void setExpiresIn(int expiresIn) {
-        this.expiresIn = expiresIn;
+    public long getExpires() {
+        return expires;
     }
 
-    public int getExpiresIn() {
-        return expiresIn;
+    public void setExpires(long expires) {
+        this.expires = expires;
     }
 
+    public void setAttribute(String key, Object val){
+        ext.put(key,val);
+    }
+    
+    public Map<String,Object> getAttributes(){
+        return Collections.unmodifiableMap(ext);
+    }
+    
     public boolean isExpired() {
-        return System.currentTimeMillis() > createdAt+expiresIn;
+        return System.currentTimeMillis() > expires;
     }
 }

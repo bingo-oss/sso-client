@@ -2,10 +2,16 @@ package tests;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.sun.org.apache.xpath.internal.operations.Bool;
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.impl.crypto.RsaProvider;
 import net.bingosoft.oss.ssoclient.SSOClient;
 import net.bingosoft.oss.ssoclient.SSOConfig;
 import net.bingosoft.oss.ssoclient.exception.InvalidTokenException;
 import net.bingosoft.oss.ssoclient.exception.TokenExpiredException;
+import net.bingosoft.oss.ssoclient.internal.Base64;
+import net.bingosoft.oss.ssoclient.internal.JWT;
 import net.bingosoft.oss.ssoclient.model.Authentication;
 import net.bingosoft.oss.ssoclient.spi.CacheProvider;
 import net.bingosoft.oss.ssoclient.spi.TokenProvider;
@@ -15,8 +21,14 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.io.UnsupportedEncodingException;
+import java.security.KeyPair;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -34,10 +46,8 @@ public class SSOClientTest {
     private static final String baseUrl = "http://localhost:9999/";
     private SSOClient client = new SSOClient(new SSOConfig().autoConfigureUrls(baseUrl));
     
-    String publicKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDDASOjIWexLpnXiJNJF2pL6NzP\n" +
-            "fBoF0tKEr2ttAkJ/7f3uUHhj2NIhQ01Wu9OjHfXjCvQSXMWqqc1+O9G1UwB2Xslb\n" +
-            "WNwEZFMwmQdP5VleGbJLR3wOl3IzdggkxBJ1Q9rXUlVtslK/CsMtkwkQEg0eZDH1\n" +
-            "VeJXqKBlEhsNckYIGQIDAQAB";
+    private KeyPair keyPair = RsaProvider.generateKeyPair();
+    
     String jwtToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9." +
             "eyJjbGllbnRfaWQiOiJjb25zb2xlIiwidXNlcl9pZCI6IjQ" +
             "zRkU2NDc2LUNEN0ItNDkzQi04MDQ0LUM3RTMxNDlEMDg3Ni" +
@@ -50,15 +60,18 @@ public class SSOClientTest {
             "P4p-NNnkh-at43NxEI63HLOKvCo67R3QgK3wrg";
     @Before
     public void before(){
-        stubFor(get(anyUrl()).willReturn(aResponse().withStatus(200).withBody(publicKey)));
+        String pk = org.apache.commons.codec.binary.Base64.encodeBase64String(keyPair.getPublic().getEncoded());
+        stubFor(get(anyUrl()).willReturn(aResponse().withStatus(200).withBody(pk)));
+        jwtToken = buildJwt(System.currentTimeMillis()+3600*1000L);
     }
+    
     @After
     public void after(){
         wireMockRule.stop();
     }
     
     @Test
-    public void testVerifyAccessToken() throws InterruptedException {
+    public void testVerifyAccessToken() throws InterruptedException, UnsupportedEncodingException {
         
         // 正确校验
         Authentication authc = client.verifyAccessToken(jwtToken);
@@ -68,9 +81,17 @@ public class SSOClientTest {
         Assert.assertTrue(authc == client.verifyAccessToken(jwtToken));
         
         // 过期
-        authc.setExpiresIn(10);
+        authc.setExpires(10);
         Thread.sleep(15);
         Assert.assertTrue(authc != client.verifyAccessToken(jwtToken));
+        
+        // jwt扩展属性
+        Map<String,Object> ext = new HashMap<String, Object>();
+        ext.put("ext1","ext1");
+        ext.put("ext2","ext2");
+        authc = client.verifyAccessToken(buildJwt(System.currentTimeMillis()+1000*3600,ext));
+        Assert.assertEquals("ext1",authc.getAttributes().get("ext1"));
+        Assert.assertEquals("ext2",authc.getAttributes().get("ext2"));
         
         // 错误的jwt格式
         boolean invalidToken = false;
@@ -83,7 +104,7 @@ public class SSOClientTest {
         // 错误的jwt校验
         invalidToken = false;
         try {
-            client.verifyAccessToken(jwtToken.replace("iJ","ab"));
+            client.verifyAccessToken(jwtToken.substring(0,jwtToken.length()-2)+"ab");
         } catch (InvalidTokenException e) {
             invalidToken = true;
         }
@@ -92,11 +113,20 @@ public class SSOClientTest {
         // jwt签名错误
         invalidToken = false;
         try {
-            client.verifyAccessToken(jwtToken.replace("63HLOKvCo67R3QgK3wrg","ab"));
+            client.verifyAccessToken("ab"+jwtToken.substring(10));
         } catch (InvalidTokenException e) {
             invalidToken = true;
         }
         Assert.assertTrue(invalidToken);
+        
+        // jwt校验过期
+        boolean expiredToken = false;
+        try {
+            client.verifyAccessToken(buildJwt(System.currentTimeMillis()-10000));
+        } catch (TokenExpiredException e) {
+            expiredToken = true;
+        }
+        Assert.assertTrue(expiredToken);
     }
     @Test
     public void testUnsupportedOperation(){
@@ -134,7 +164,6 @@ public class SSOClientTest {
         Assert.assertEquals("admin", authc.getUsername());
         Assert.assertEquals("perm", authc.getScope());
         Assert.assertEquals("console", authc.getClientId());
-        Assert.assertEquals(23694, authc.getExpiresIn());
     }
     @Test
     public void testCacheProvider(){
@@ -146,7 +175,7 @@ public class SSOClientTest {
             public <T> T get(String key) {
                 used.put("get",true);
                 Authentication authentication = new Authentication();
-                authentication.setExpiresIn(1);
+                authentication.setExpires(1);
                 try {
                     Thread.sleep(2);
                 } catch (InterruptedException e) {
@@ -197,6 +226,25 @@ public class SSOClientTest {
         client.verifyAccessToken(UUID.randomUUID().toString());
         Assert.assertTrue(used.get("verifyJwtAccessToken"));
         Assert.assertTrue(used.get("verifyBearerAccessToken"));
+    }
+    
+    protected String buildJwt(long exp, Map<String, Object> ext){
+        JwtBuilder jwt = Jwts.builder().signWith(SignatureAlgorithm.RS256,keyPair.getPrivate())
+                .claim("user_id","43FE6476-CD7B-493B-8044-C7E3149D0876")
+                .claim("scope","perm")
+                .claim("client_id","console")
+                .claim("username","admin")
+                .claim("exp",exp);
+        if(ext != null){
+            for (Entry<String, Object> entry : ext.entrySet()){
+                jwt.claim(entry.getKey(),entry.getValue());
+            }
+        }
+        return jwt.compact();
+    }
+    
+    protected String buildJwt(long exp){
+        return buildJwt(exp,null);
     }
     
 }

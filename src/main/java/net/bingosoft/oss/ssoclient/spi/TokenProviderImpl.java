@@ -29,6 +29,7 @@ import java.security.KeyFactory;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class TokenProviderImpl implements TokenProvider {
 
@@ -59,14 +60,18 @@ public class TokenProviderImpl implements TokenProvider {
         authentication.setClientId((String)map.remove("client_id"));
         authentication.setScope((String)map.remove("scope"));
 
-        String expiresIn = Strings.nullOrToString(map.remove("expires_in"));
-        authentication.setExpiresIn(expiresIn == null ? 0 : Integer.parseInt(expiresIn));
+        String expires = Strings.nullOrToString(map.remove("exp"));
+        authentication.setExpires(expires == null ? 0 : Long.parseLong(expires));
         
         if(authentication.isExpired()){
+            System.out.println(System.currentTimeMillis()-authentication.getExpires());
             throw new TokenExpiredException(accessToken);
         }
 
         //todo : 扩展属性
+        for (Entry<String, Object> entry : map.entrySet()){
+            authentication.setAttribute(entry.getKey(),entry.getValue());
+        }
         
         return authentication;
     }

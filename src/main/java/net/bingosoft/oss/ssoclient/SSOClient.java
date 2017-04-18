@@ -73,7 +73,7 @@ public class SSOClient {
             authc = tp().verifyBearerAccessToken(accessToken);
         }
 
-        cp.put(accessToken, authc, authc.getExpiresIn());
+        cp.put(accessToken, authc, authc.getExpires());
 
         return authc;
     }
