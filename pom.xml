@@ -104,6 +104,12 @@
                         <goals>
                             <goal>jar</goal>
                         </goals>
+                        <configuration>
+                            <charset>${common.encoding}</charset>
+                            <encoding>${common.encoding}</encoding>
+                            <docencoding>${common.encoding}</docencoding>
+                            <additionalparam>-Xdoclint:none</additionalparam>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
