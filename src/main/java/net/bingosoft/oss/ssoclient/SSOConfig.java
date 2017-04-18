@@ -29,7 +29,7 @@ public class SSOConfig {
     //todo :
 
     public SSOConfig() {
-
+        this(null,null);
     }
 
     public SSOConfig(String clientId, String clientSecret) {
@@ -107,9 +107,8 @@ public class SSOConfig {
         }
 
         //todo :
-        this.publicKeyEndpointUrl = baseUrl + "/get_public_key";
-        this.tokenInfoEndpointUrl = baseUrl + "/tokeninfo";
-
+        this.setPublicKeyEndpointUrl(baseUrl + "/get_public_key");
+        this.setTokenInfoEndpointUrl(baseUrl + "/tokeninfo");
         return this;
     }
 }

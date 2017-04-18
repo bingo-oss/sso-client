@@ -43,8 +43,6 @@ public class SSOUtils {
         }
     }
 
-    protected SSOUtils() {
-
-    }
+    protected SSOUtils() {}
 
 }

@@ -1,7 +1,5 @@
 package net.bingosoft.oss.ssoclient.internal;
 
-import sun.misc.BASE64Decoder;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
@@ -18,8 +16,7 @@ public class Base64 {
     }
     public static byte[] mimeDecode(String str) {
         try {
-            org.apache.commons.codec.binary.Base64.decodeBase64(str.getBytes(JWT.UTF_8));
-            return new BASE64Decoder().decodeBuffer(str);
+            return org.apache.commons.codec.binary.Base64.decodeBase64(str.getBytes(JWT.UTF_8));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

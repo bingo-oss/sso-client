@@ -47,7 +47,6 @@ public class JWT {
         if(verifySignature(content,signature,pk)){
             try{
                 String json = new String(Base64.urlDecode(payload), UTF_8);
-
                 return JSON.decodeToMap(json);
             }catch(UnsupportedEncodingException e) {
                 throw new RuntimeException(e);

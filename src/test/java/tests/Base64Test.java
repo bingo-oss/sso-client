@@ -28,6 +28,8 @@ public class Base64Test {
                 -38,-41,82,85,109,-78,82,-65,10,-61,45,-109,9,16,18,13,30,100,49,
                 -11,85,-30,87,-88,-96,101,18,27,13,114,70,8,25,2,3,1,0,1};
         Assert.assertArrayEquals(bytesJdk6,bytesJdk8);
+        
+        Assert.assertNull(Base64.urlDecode(null));
     }
     @Test
     public void testUrlDecode() throws UnsupportedEncodingException {
