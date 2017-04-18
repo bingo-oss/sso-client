@@ -233,13 +233,13 @@ public class SSOClientTest {
                 .claim("user_id","43FE6476-CD7B-493B-8044-C7E3149D0876")
                 .claim("scope","perm")
                 .claim("client_id","console")
-                .claim("username","admin")
-                .claim("exp",exp);
+                .claim("username","admin");
         if(ext != null){
             for (Entry<String, Object> entry : ext.entrySet()){
                 jwt.claim(entry.getKey(),entry.getValue());
             }
         }
+        jwt.setExpiration(new Date(exp));
         return jwt.compact();
     }
     

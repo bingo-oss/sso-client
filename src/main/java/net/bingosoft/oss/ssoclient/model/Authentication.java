@@ -29,6 +29,10 @@ public class Authentication {
     protected String username;
     protected String clientId;
     protected String scope;
+    /**
+     * 过期时间，单位：秒
+     * 参考：http://self-issued.info/docs/draft-ietf-oauth-json-web-token.html#expDef
+     */
     protected long   expires;
     
     /* ======= Nonstandard attribute ======= */
@@ -83,6 +87,6 @@ public class Authentication {
     }
     
     public boolean isExpired() {
-        return System.currentTimeMillis() > expires;
+        return System.currentTimeMillis()/1000L > expires;
     }
 }
