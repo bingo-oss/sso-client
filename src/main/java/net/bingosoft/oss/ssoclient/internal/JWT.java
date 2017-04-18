@@ -16,7 +16,6 @@
 
 package net.bingosoft.oss.ssoclient.internal;
 
-import bingoee.sso.client.*;
 import net.bingosoft.oss.ssoclient.exception.InvalidTokenException;
 import net.bingosoft.oss.ssoclient.exception.TokenExpiredException;
 
@@ -33,7 +32,7 @@ import java.util.Map;
 
 public class JWT {
     
-    public static final String DEF_CHARSET = "UTF-8";
+    public static final String UTF_8 = "UTF-8";
     public static final String ALGORITHM = "SHA256withRSA";
     
     public static Map<String, Object> verity(String jwt, String pk) throws InvalidTokenException, TokenExpiredException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException {
@@ -48,7 +47,7 @@ public class JWT {
         signature = parts[2];
         
         if(verifySignature(content,signature,pk)){
-            String json = new String(Base64.urlDecode(payload), DEF_CHARSET);
+            String json = new String(Base64.urlDecode(payload), UTF_8);
             return JSON.decodeToMap(json);
         }
         throw new InvalidTokenException(jwt);
@@ -56,7 +55,7 @@ public class JWT {
     
     private static boolean verifySignature(String content, String signed, String pk) throws SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException {
         byte[] signedData = Base64.urlDecode(signed);
-        byte[] contentData = content.getBytes(CharsetName.UTF8);
+        byte[] contentData = content.getBytes(JWT.UTF_8);
 
         Signature signature = Signature.getInstance(ALGORITHM);
         

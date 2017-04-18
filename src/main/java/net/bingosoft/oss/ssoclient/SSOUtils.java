@@ -23,11 +23,24 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class SSOUtils {
 
+    public static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String BEARER               = "Bearer";
+    
     /**
      * todo : doc.
      */
     public static String extractAccessToken(HttpServletRequest request) {
-        return null;
+        String header = request.getHeader(AUTHORIZATION_HEADER);
+        if(header == null || header.trim().isEmpty()){
+            return null;
+        }
+        header = header.trim();
+        if(header.startsWith(BEARER)){
+            header = header.substring(BEARER.length());
+            return header.trim();
+        }else {
+            return header;
+        }
     }
 
     protected SSOUtils() {

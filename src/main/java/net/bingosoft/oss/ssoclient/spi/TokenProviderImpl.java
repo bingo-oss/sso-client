@@ -16,11 +16,11 @@
 
 package net.bingosoft.oss.ssoclient.spi;
 
-import bingoee.sso.client.Strings;
 import net.bingosoft.oss.ssoclient.SSOConfig;
 import net.bingosoft.oss.ssoclient.exception.TokenExpiredException;
 import net.bingosoft.oss.ssoclient.internal.HttpClient;
 import net.bingosoft.oss.ssoclient.internal.JWT;
+import net.bingosoft.oss.ssoclient.internal.Strings;
 import net.bingosoft.oss.ssoclient.model.Authentication;
 
 import java.util.Map;
