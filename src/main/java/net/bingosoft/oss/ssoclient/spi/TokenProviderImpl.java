@@ -64,7 +64,6 @@ public class TokenProviderImpl implements TokenProvider {
         authentication.setExpires(expires == null ? 0 : Long.parseLong(expires));
         
         if(authentication.isExpired()){
-            System.out.println(System.currentTimeMillis()-authentication.getExpires());
             throw new TokenExpiredException(accessToken);
         }
 
