@@ -50,8 +50,8 @@ public class SSOClient {
      * <p/>
      * 在Servlet容器中可以通过调用{@link SSOUtils#extractAccessToken(HttpServletRequest)}获取到访问令牌。
      *
-     * @throws InvalidTokenException
-     * @throws TokenExpiredException
+     * @throws InvalidTokenException 如果accessToken是无效的
+     * @throws TokenExpiredException 如果accessToken已经过期
      */
     public Authentication verifyAccessToken(String accessToken) throws InvalidTokenException, TokenExpiredException{
         CacheProvider cp = cp();
@@ -81,23 +81,13 @@ public class SSOClient {
     /**
      * 验证登录后获取到的Id Token并返回认证信息。
      *
-     * @throws InvalidTokenException
-     * @throws TokenExpiredException
+     * @throws InvalidTokenException 如果idToken是无效的
+     * @throws TokenExpiredException 如果idToken已经过期
      */
     public Authentication verifyIdToken(String idToken) throws InvalidTokenException, TokenExpiredException {
         throw new UnsupportedOperationException("Not implemented");
     }
-
-    /**
-     * 验证登录后获取到的授权码并返回访问令牌信息
-     *
-     * @throws InvalidTokenException
-     * @throws TokenExpiredException
-     */
-    public AccessToken obtainAccessToken(String authorizationCode) throws InvalidTokenException, TokenExpiredException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
+    
     protected boolean checkJwtToken(String accessToken) {
         return accessToken.contains(".");
     }

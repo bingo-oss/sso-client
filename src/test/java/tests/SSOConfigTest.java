@@ -31,11 +31,9 @@ public class SSOConfigTest {
         SSOConfig config = new SSOConfig();
         config.setClientId("clientId");
         config.setClientSecret("clientSecret");
-        config.setTokenInfoEndpointUrl("http://localhost:9999");
         config.setPublicKeyEndpointUrl("http://localhost:9999");
         Assert.assertEquals("clientId",config.getClientId());
         Assert.assertEquals("clientSecret",config.getClientSecret());
-        Assert.assertEquals("http://localhost:9999",config.getTokenInfoEndpointUrl());
         Assert.assertEquals("http://localhost:9999",config.getPublicKeyEndpointUrl());
     }
 }

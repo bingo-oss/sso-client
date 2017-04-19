@@ -139,15 +139,6 @@ public class SSOClientTest {
         }
         Assert.assertTrue(unsupported);
 
-        // 获取at对象
-        unsupported = false;
-        try {
-            client.obtainAccessToken(UUID.randomUUID().toString());
-        }catch (UnsupportedOperationException e){
-            unsupported = true;
-        }
-        Assert.assertTrue(unsupported);
-
         // 校验id token
         unsupported = false;
         try {

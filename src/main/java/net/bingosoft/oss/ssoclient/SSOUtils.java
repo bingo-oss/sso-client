@@ -27,7 +27,13 @@ public class SSOUtils {
     public static final String BEARER               = "Bearer";
     
     /**
-     * todo : doc.
+     * 从{@link HttpServletRequest}对象中解析accessToken，这里的accessToken是放在名为Authorization的请求头里。
+     * 
+     * <p/>
+     * 示例：
+     * <pre>
+     *      Authorization: Bearer {accessToken}     
+     * </pre>
      */
     public static String extractAccessToken(HttpServletRequest request) {
         String header = request.getHeader(AUTHORIZATION_HEADER);
