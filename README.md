@@ -70,7 +70,7 @@ public class ClientGenerator{
 
 ### 2. 身份认证 (Authentication)
 
-当需要开发web服务对外提供Restful服务时，对于遵循[OAuth 2.0](https://tools.ietf.org/html/rfc6749)标准协议的请求，如果需要校验用户身份，可以使用如下方式：
+在Restful API中，对于遵循[OAuth 2.0](https://tools.ietf.org/html/rfc6749)标准协议的请求，使用如下方式校验用户身份：
 
 ```java
 import net.bingosoft.oss.ssoclient.*;
