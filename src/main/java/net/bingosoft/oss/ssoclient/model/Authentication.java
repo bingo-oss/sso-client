@@ -74,6 +74,10 @@ public class Authentication {
         return expires;
     }
 
+    public long getExpiresMs() {
+        return expires * 1000L;
+    }
+
     public void setExpires(long expires) {
         this.expires = expires;
     }
@@ -87,6 +91,6 @@ public class Authentication {
     }
     
     public boolean isExpired() {
-        return System.currentTimeMillis()/1000L > expires;
+        return System.currentTimeMillis()/1000L >= expires;
     }
 }
