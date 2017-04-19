@@ -17,10 +17,9 @@
 
 ## 运行环境
 
-|SDK 版本 | Java 版本|备注|
-| ------- | -------  | ---- |
-|未发布   | 6+       |最新稳定版|
-|3.0.0-SNAPSHOT|6+|最新快照版|
+|SDK 版本 | Java 版本|
+| ------ | -------  |
+|3.0.0   |6+        |
 
 ## 外部依赖
 |名称      | 版本    | 依赖说明|      
@@ -43,6 +42,32 @@
 
 ## 使用
 
+### 1. 创建`SSOClient`对象
+
+创建一个`SSOClient`对象还需要先构造一个`SSOConfig`对象，示例如下：
+
+```java
+// SSOClient的构造器
+public class ClientGenerator{
+    public SSOClient generate(){
+        // 创建SSOConfig对象
+        SSOConfig config = new SSOConfig();
+        // 设置应用标识
+        config.setClientId("clientId");
+        // 设置应用密钥
+        config.setClientSecret("clientSecret");
+        
+        // 设置应用获取SSO服务器公钥（public key）的url
+        // 如：http://sso.example.com/publickey
+        // 这里也可以使用config.autoConfigureUrls("http://sso.example.com")自动配置
+        config.setPublicKeyEndpointUrl("http://sso.example.com/publickey");
+        // 创建client对象
+        SSOClient client = new SSOClient(config);
+        return client;
+    }
+}
+```
+
 ### 1. 身份认证 (Authentication)
 
 当需要开发web服务对外提供Restful服务时，对于遵循[OAuth 2.0](https://tools.ietf.org/html/rfc6749)标准协议的请求，如果需要校验用户身份，可以使用如下方式：
@@ -59,19 +84,8 @@ public class DemoServlet extends javax.servlet.http.HttpServlet{
     
     @Override
     public void init() throws ServletException {
-        // 初始化SSOClient配置
-        SSOConfig config = new SSOConfig();
-        // 设置响应的client_id和client_secret，必须设置
-        config.setClientId("clientId");
-        config.setClientId("clientSecret");
-        // 设置sso服务器的地址
-        // 这里是根据sso服务器地址自动配置其他地址，也可以用如下方式手动配置对应地址
-        // config.setPublicKeyEndpointUrl(${publicKeyUrl)});
-        // config.setTokenInfoEndpointUrl(${tokenInfoUrl});
-        config.autoConfigureUrls("http://sso.example.com");
-        // 初始化client对象
-        this.client = new SSOClient(config);
-        
+        // 使用前面的构造器创建一个SSOClient对象
+        this.client = new ClientGenerator().generate();
     }
     
     @Override
@@ -165,20 +179,18 @@ class CustomCacheProvider implements net.bingosoft.oss.ssoclient.spi.CacheProvid
 }
 
 // 使用定制的缓存对象
-public class DemoServlet extends javax.servlet.http.HttpServlet{
-    
-    protected SSOClient client;
-    
-    @Override
-    public void init() throws ServletException {
-        // 省略初始化config的代码
-        // 初始化client;
-        this.client = new SSOClient(config);
+// SSOClient的构造器
+public class ClientGenerator{
+    public SSOClient generate(){
+        SSOConfig config = new SSOConfig();
+        // 省略SSOConfig对象的配置过程
+        SSOClient client = new SSOClient(config);
         
-        // 设置定制的缓存对象
-        this.client.setCacheProvider(new CustomCacheProvider());
+        
+        // 设置client对象的缓存器（CacheProvider）
+        client.setCacheProvider(new CustomCacheProvider());
+        return client;
     }
-    // 省略其他逻辑代码
 }
 ```
 
