@@ -37,7 +37,7 @@ public class JWT {
     public static Map<String, Object> verity(String token, RSAPublicKey pk) throws InvalidTokenException {
         String[] parts = token.split("\\.");
         if(parts.length != 3) {
-            throw new InvalidTokenException("Invalid jwt token"); //todo : detail error message.
+            throw new InvalidTokenException("Invalid jwt: length of parts expect 3 but actual "+parts.length+", token:"+token);
         }
 
         String content   = parts[0] + "." + parts[1];

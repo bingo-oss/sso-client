@@ -66,8 +66,7 @@ public class TokenProviderImpl implements TokenProvider {
         if(authentication.isExpired()){
             throw new TokenExpiredException(accessToken);
         }
-
-        //todo : 扩展属性
+        
         for (Entry<String, Object> entry : map.entrySet()){
             authentication.setAttribute(entry.getKey(),entry.getValue());
         }
