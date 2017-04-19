@@ -153,9 +153,9 @@ todo
 
 ### 自定义缓存
 
-对于access token的校验结果，sdk中提供了简单的缓存实现`net.bingosoft.oss.ssoclient.spi.CacheProviderImpl`，在实际应用中我们可能需要根据需求定制校验缓存。
+sdk中提供了简单的access token校验缓存实现`net.bingosoft.oss.ssoclient.spi.CacheProviderImpl`，在实际应用中可以根据需求定制CacheProvider。
 
-定制缓存需要实现`net.bingosoft.oss.ssoclient.spi.CacheProvider`接口，并用缓存实现类的对象覆盖默认的CacheProvider，示例如下：
+定制CacheProvider需要实现`net.bingosoft.oss.ssoclient.spi.CacheProvider`接口，并用实现类的对象覆盖默认的CacheProvider，示例如下：
 
 ```java
 import net.bingosoft.oss.ssoclient.*;
