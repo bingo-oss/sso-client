@@ -107,8 +107,6 @@ public class DemoServlet extends javax.servlet.http.HttpServlet{
 }
 ```
 
-> 注：这里在Servlet中创建了一个SSOClient的对象，实际上对于同一个应用，不管有多少个Servlet，只需要创建一个单例的SSOClient对象即可。
-
 ### 2. 登录注销 (Login & Logout)
 
 todo : 简要描述登录注销适用场景
