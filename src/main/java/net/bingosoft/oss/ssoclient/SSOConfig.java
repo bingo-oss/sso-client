@@ -44,7 +44,7 @@ public class SSOConfig {
     }
 
     /**
-     * todo : doc
+     * 返回应用标识
      */
     public String getClientId() {
         return clientId;
@@ -55,7 +55,7 @@ public class SSOConfig {
     }
 
     /**
-     * todo : doc
+     * 返回应用密钥
      */
     public String getClientSecret() {
         return clientSecret;
@@ -66,7 +66,7 @@ public class SSOConfig {
     }
 
     /**
-     * todo : doc
+     * 返回获取SSO服务器公钥的url
      */
     public String getPublicKeyEndpointUrl() {
         return publicKeyEndpointUrl;
