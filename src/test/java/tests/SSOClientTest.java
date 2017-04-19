@@ -1,7 +1,6 @@
 package tests;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -10,8 +9,6 @@ import net.bingosoft.oss.ssoclient.SSOClient;
 import net.bingosoft.oss.ssoclient.SSOConfig;
 import net.bingosoft.oss.ssoclient.exception.InvalidTokenException;
 import net.bingosoft.oss.ssoclient.exception.TokenExpiredException;
-import net.bingosoft.oss.ssoclient.internal.Base64;
-import net.bingosoft.oss.ssoclient.internal.JWT;
 import net.bingosoft.oss.ssoclient.model.Authentication;
 import net.bingosoft.oss.ssoclient.spi.CacheProvider;
 import net.bingosoft.oss.ssoclient.spi.TokenProvider;
@@ -23,10 +20,8 @@ import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.security.KeyPair;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;

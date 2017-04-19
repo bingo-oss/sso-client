@@ -29,6 +29,8 @@ public class SSOUtils {
     /**
      * 从{@link HttpServletRequest}对象中解析accessToken，这里的accessToken是放在名为Authorization的请求头里。
      * 
+     * 如果没有名为Authorization的请求头，则返回null
+     * 
      * <p/>
      * 示例：
      * <pre>
