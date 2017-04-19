@@ -44,7 +44,7 @@
 
 ### 1. 创建`SSOClient`对象
 
-创建一个`SSOClient`对象还需要先构造一个`SSOConfig`对象，示例如下：
+创建一个`SSOClient`对象需要先构造一个`SSOConfig`对象，示例如下：
 
 ```java
 // SSOClient的构造器
@@ -155,7 +155,7 @@ todo
 
 对于access token的校验结果，sdk中提供了简单的缓存实现`net.bingosoft.oss.ssoclient.spi.CacheProviderImpl`，在实际应用中我们可能需要根据需求定制校验缓存。
 
-定制缓存需要实现`net.bingosoft.oss.ssoclient.spi.CacheProvider`接口，并用缓存实现类的对象覆盖默认的缓存提供器，示例如下：
+定制缓存需要实现`net.bingosoft.oss.ssoclient.spi.CacheProvider`接口，并用缓存实现类的对象覆盖默认的CacheProvider，示例如下：
 
 ```java
 import net.bingosoft.oss.ssoclient.*;
@@ -187,7 +187,7 @@ public class ClientGenerator{
         SSOClient client = new SSOClient(config);
         
         
-        // 设置client对象的缓存器（CacheProvider）
+        // 设置client对象的CacheProvider
         client.setCacheProvider(new CustomCacheProvider());
         return client;
     }
