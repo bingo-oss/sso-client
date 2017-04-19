@@ -68,7 +68,7 @@ public class ClientGenerator{
 }
 ```
 
-### 1. 身份认证 (Authentication)
+### 2. 身份认证 (Authentication)
 
 当需要开发web服务对外提供Restful服务时，对于遵循[OAuth 2.0](https://tools.ietf.org/html/rfc6749)标准协议的请求，如果需要校验用户身份，可以使用如下方式：
 
@@ -121,31 +121,31 @@ public class DemoServlet extends javax.servlet.http.HttpServlet{
 }
 ```
 
-### 2. 登录注销 (Login & Logout)
+### 3. 登录注销 (Login & Logout)
 
 todo : 简要描述登录注销适用场景
 
-#### 2.1 登录
+#### 3.1 登录
 
 todo
 
-#### 2.2 注销
+#### 3.2 注销
 
 todo
 
-### 3. 获取访问令牌 (Obtain Access Token)
+### 4. 获取访问令牌 (Obtain Access Token)
 
 todo : 简要描述获取访问令牌的适用场景
 
-#### 3.1 通过授权码获取新的访问令牌
+#### 4.1 通过授权码获取新的访问令牌
 
 todo
 
-#### 3.2 通过已有的访问令牌获取新的访问令牌
+#### 4.2 通过已有的访问令牌获取新的访问令牌
 
 todo 
 
-#### 3.3 通过id_token获取新的访问令牌
+#### 4.3 通过id_token获取新的访问令牌
 
 todo
 
