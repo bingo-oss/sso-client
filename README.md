@@ -160,7 +160,7 @@ sdk中提供了简单的access token校验缓存实现`net.bingosoft.oss.ssoclie
 ```java
 import net.bingosoft.oss.ssoclient.*;
 
-// 创建新的缓存实现
+// 创建新的CacheProvider实现
 class CustomCacheProvider implements net.bingosoft.oss.ssoclient.spi.CacheProvider{
     @Override
     public <T> T get(String key) {
@@ -178,14 +178,12 @@ class CustomCacheProvider implements net.bingosoft.oss.ssoclient.spi.CacheProvid
     }
 }
 
-// 使用定制的缓存对象
-// SSOClient的构造器
+// 使用定制的CacheProvider对象
 public class ClientGenerator{
     public SSOClient generate(){
         SSOConfig config = new SSOConfig();
         // 省略SSOConfig对象的配置过程
         SSOClient client = new SSOClient(config);
-        
         
         // 设置client对象的CacheProvider
         client.setCacheProvider(new CustomCacheProvider());
