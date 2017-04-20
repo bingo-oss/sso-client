@@ -8,9 +8,11 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.crypto.RsaProvider;
 import net.bingosoft.oss.ssoclient.SSOClient;
 import net.bingosoft.oss.ssoclient.SSOConfig;
+import net.bingosoft.oss.ssoclient.SSOUtils;
 import net.bingosoft.oss.ssoclient.exception.InvalidCodeException;
 import net.bingosoft.oss.ssoclient.exception.InvalidTokenException;
 import net.bingosoft.oss.ssoclient.exception.TokenExpiredException;
+import net.bingosoft.oss.ssoclient.internal.Base64;
 import net.bingosoft.oss.ssoclient.internal.JSON;
 import net.bingosoft.oss.ssoclient.model.AccessToken;
 import net.bingosoft.oss.ssoclient.model.Authentication;
@@ -31,6 +33,7 @@ import java.util.Map.Entry;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.removeStub;
@@ -67,6 +70,7 @@ public class SSOClientTest {
             "QCTVEFfvT8";
     
     String authCode = UUID.randomUUID().toString().replace("-","");
+    String basicHeader;
     
     @Before
     public void before(){
@@ -81,7 +85,10 @@ public class SSOClientTest {
         SSOConfig config = new SSOConfig().autoConfigureUrls(baseUrl);
         config.setClientId("test");
         config.setClientSecret("test_secret");
+        config.setRedirectUri("http://www.example.com");
         client = new SSOClient(config);
+        
+        basicHeader = SSOUtils.encodeBasicAuthorizationHeader(config.getClientId(),config.getClientSecret());
     }
     
     @After
@@ -169,8 +176,7 @@ public class SSOClientTest {
         Map<String, String> params = new HashMap<String, String>();
         params.put("grant_type","authorization_code");
         params.put("code",authCode);
-        params.put("client_id",client.getConfig().getClientId());
-        params.put("client_secret",client.getConfig().getClientSecret());
+        params.put("redirectUri", Base64.urlEncode(client.getConfig().getRedirectUri()));
         
         Map<String, String> resp = new HashMap<String, String>();
         resp.put("access_token","accesstoken");
@@ -180,6 +186,7 @@ public class SSOClientTest {
         
         // 正常返回
         MappingBuilder mb = post("/oauth2/token").withPostServeAction("postParams",params)
+                .withHeader("Authorization", equalTo(basicHeader))
                 .willReturn(aResponse().withStatus(200).withBody(JSON.encode(resp)));
         stubFor(mb);
         AccessToken accessToken = client.obtainAccessToken(authCode);
@@ -188,6 +195,7 @@ public class SSOClientTest {
         // 无效的code
         removeStub(mb);
         mb = post("/oauth2/token").withPostServeAction("postParams",params)
+                .withHeader("Authorization", equalTo(basicHeader))
                 .willReturn(aResponse().withStatus(400).withBody("invalid code"));
         stubFor(mb);
         boolean invalid = false;
@@ -207,6 +215,7 @@ public class SSOClientTest {
         removeStub(mb);
         resp.remove("access_token");
         mb = post("/oauth2/token").withPostServeAction("postParams",params)
+                .withHeader("Authorization", equalTo(basicHeader))
                 .willReturn(aResponse().withStatus(200).withBody(JSON.encode(resp)));
         stubFor(mb);
         invalid = false;
@@ -227,6 +236,7 @@ public class SSOClientTest {
         removeStub(mb);
         resp.remove("expires_in");
         mb = post("/oauth2/token").withPostServeAction("postParams",params)
+                .withHeader("Authorization", equalTo(basicHeader))
                 .willReturn(aResponse().withStatus(200).withBody(JSON.encode(resp)));
         stubFor(mb);
         boolean expired = false;
@@ -247,6 +257,7 @@ public class SSOClientTest {
         removeStub(mb);
         resp.remove("expires_in");
         mb = post("/oauth2/token").withPostServeAction("postParams",params)
+                .withHeader("Authorization", equalTo(basicHeader))
                 .willReturn(aResponse().withStatus(200).withBody("{errorjson}"));
         stubFor(mb);
         boolean runtimeException = false;

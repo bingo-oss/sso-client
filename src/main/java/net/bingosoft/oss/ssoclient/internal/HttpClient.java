@@ -63,7 +63,7 @@ public class HttpClient {
         }
     }
     
-    public static String post(String url, Map<String, String> params) throws HttpException{
+    public static String post(String url, Map<String, String> params, Map<String, String> headers) throws HttpException{
         try {
             HttpURLConnection connection = (HttpURLConnection)new URL(url).openConnection();
             connection.setConnectTimeout(3000);
@@ -78,10 +78,15 @@ public class HttpClient {
             InputStreamReader isr = null;
             BufferedReader reader = null;
             try {
+                if(headers != null && !headers.isEmpty()){
+                    for (Map.Entry<String,String> entry : headers.entrySet()){
+                        connection.setRequestProperty(entry.getKey(),entry.getValue());
+                    }
+                }
                 connection.connect();
                 if(params != null && !params.isEmpty()){
                     os = connection.getOutputStream();
-                    osw = new OutputStreamWriter(os);
+                    osw = new OutputStreamWriter(os,"UTF-8");
                     writer = new BufferedWriter(osw);
                     StringBuilder paramsBuilder = new StringBuilder();
                     for (Map.Entry<String, String> entry : params.entrySet()){
@@ -103,7 +108,7 @@ public class HttpClient {
                 if(code >= HttpURLConnection.HTTP_BAD_REQUEST){
                     
                     is = connection.getErrorStream();
-                    isr = new InputStreamReader(is);
+                    isr = new InputStreamReader(is,"UTF-8");
                     reader = new BufferedReader(isr);
                     
                     StringBuilder sb = new StringBuilder();
@@ -119,7 +124,7 @@ public class HttpClient {
                             "\nerror message: " + sb.toString());
                 }
                 is = connection.getInputStream();
-                isr = new InputStreamReader(is);
+                isr = new InputStreamReader(is,"UTF-8");
                 reader = new BufferedReader(isr);
                 
                 StringBuilder sb = new StringBuilder();

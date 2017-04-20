@@ -23,8 +23,10 @@ public class SSOConfig {
 
     protected String clientId;
     protected String clientSecret;
+    protected String redirectUri;
     protected String publicKeyEndpointUrl;
     protected String tokenEndpointUrl;
+    protected String authorizationEndpointUrl;
 
     //todo :
 
@@ -67,6 +69,17 @@ public class SSOConfig {
     }
 
     /**
+     * 返回应用的回调地址(redirect_uri) 
+     */
+    public String getRedirectUri() {
+        return redirectUri;
+    }
+
+    public void setRedirectUri(String redirectUri) {
+        this.redirectUri = redirectUri;
+    }
+
+    /**
      * 返回获取SSO服务器公钥的url
      */
     public String getPublicKeyEndpointUrl() {
@@ -89,6 +102,16 @@ public class SSOConfig {
     }
 
     /**
+     * 返回SSO登录验证地址
+     */
+    public String getAuthorizationEndpointUrl() {
+        return authorizationEndpointUrl;
+    }
+    public void setAuthorizationEndpointUrl(String authorizationEndpointUrl) {
+        this.authorizationEndpointUrl = authorizationEndpointUrl;
+    }
+
+    /**
      * 指定SSO服务器的基础地址,自动配置其他的地址属性。
      *
      * <p/>
@@ -105,10 +128,13 @@ public class SSOConfig {
         if(baseUrl.endsWith("/")) {
             baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
         }
-
         //todo :
         this.setPublicKeyEndpointUrl(baseUrl + "/publickey");
         this.setTokenEndpointUrl(baseUrl+ "/oauth2/token");
+        this.setAuthorizationEndpointUrl(baseUrl+"/oauth2/authorize");
         return this;
     }
+    
+
+    
 }

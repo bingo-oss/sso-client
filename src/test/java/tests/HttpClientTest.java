@@ -34,13 +34,13 @@ public class HttpClientTest {
         // 正常获取结果
         Map<String, String> p = new HashMap<String, String>();
         p.put("p1","p1");
-        String resp = HttpClient.post(baseUrl+"/200",p);
+        String resp = HttpClient.post(baseUrl+"/200",p,null);
         Assert.assertEquals("ok",resp);
         // 返回500
         boolean error = false;
         String errorMsg = null;
         try{
-            HttpClient.post(baseUrl+"/500",p);
+            HttpClient.post(baseUrl+"/500",p,null);
         }catch (RuntimeException e){
             error = true;
             errorMsg = e.getMessage();
@@ -52,7 +52,7 @@ public class HttpClientTest {
         error = false;
         errorMsg = null;
         try{
-            HttpClient.post(baseUrl+"/400",p);
+            HttpClient.post(baseUrl+"/400",p,null);
         }catch (RuntimeException e){
             error = true;
             errorMsg = e.getMessage();
@@ -61,7 +61,7 @@ public class HttpClientTest {
         Assert.assertTrue(errorMsg.contains("this is bad request api"));
 
         // 返回300
-        Assert.assertTrue(HttpClient.post(baseUrl+"/300",p).contains("this is multiple choices api"));
+        Assert.assertTrue(HttpClient.post(baseUrl+"/300",p,null).contains("this is multiple choices api"));
     }
     
 }

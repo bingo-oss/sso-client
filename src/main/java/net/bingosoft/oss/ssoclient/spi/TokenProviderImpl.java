@@ -17,6 +17,7 @@
 package net.bingosoft.oss.ssoclient.spi;
 
 import net.bingosoft.oss.ssoclient.SSOConfig;
+import net.bingosoft.oss.ssoclient.SSOUtils;
 import net.bingosoft.oss.ssoclient.exception.HttpException;
 import net.bingosoft.oss.ssoclient.exception.InvalidCodeException;
 import net.bingosoft.oss.ssoclient.exception.InvalidTokenException;
@@ -89,12 +90,15 @@ public class TokenProviderImpl implements TokenProvider {
         Map<String, String> params = new HashMap<String, String>();
         params.put("grant_type","authorization_code");
         params.put("code",authzCode);
-        params.put("client_id",config.getClientId());
-        params.put("redirect_uri","");
+        params.put("redirect_uri",Base64.urlEncode(config.getRedirectUri()));
 
+        Map<String, String> header = new HashMap<String, String>();
+        String h = SSOUtils.encodeBasicAuthorizationHeader(config.getClientId(),config.getClientSecret());
+        header.put(SSOUtils.AUTHORIZATION_HEADER,h);
+        
         String json;
         try {
-            json = HttpClient.post(config.getTokenEndpointUrl(),params);
+            json = HttpClient.post(config.getTokenEndpointUrl(),params,header);
         } catch (HttpException e) {
             if(e.getCode() < HttpURLConnection.HTTP_INTERNAL_ERROR){
                 throw new InvalidCodeException(e.getMessage());

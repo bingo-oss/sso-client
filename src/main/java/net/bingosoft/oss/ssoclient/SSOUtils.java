@@ -16,6 +16,8 @@
 
 package net.bingosoft.oss.ssoclient;
 
+import net.bingosoft.oss.ssoclient.internal.Base64;
+
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -25,6 +27,7 @@ public class SSOUtils {
 
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String BEARER               = "Bearer";
+    public static final String BASIC                = "Basic";
     
     /**
      * 从{@link HttpServletRequest}对象中解析accessToken，这里的accessToken是放在名为Authorization的请求头里。
@@ -49,6 +52,18 @@ public class SSOUtils {
         }else {
             return header;
         }
+    }
+
+    /**
+     * 将<code>clientId</code>和<code>clientSecret</code>组合并编码成HTTP Basic authentication需要的请求头的值。
+     * 参考：https://tools.ietf.org/html/rfc6749#section-2.3.1
+     * 
+     * 在使用授权码获取access token的时候，需要使用HTTP Basic authentication方式验证client身份。
+     * 参考：https://tools.ietf.org/html/rfc6749#section-4.1.3
+     * 
+     */
+    public static String encodeBasicAuthorizationHeader(String clientId, String clientSecret){
+        return BASIC + " " + Base64.urlEncode(clientId+":"+clientSecret);
     }
     
     protected SSOUtils() {}
