@@ -65,8 +65,7 @@ public class SSOClient {
                 cp.remove(accessToken);
             }
         }
-
-        //check is jwt token?
+        
         boolean jwt = checkJwtToken(accessToken);
         if(jwt) {
             authc = tp().verifyJwtAccessToken(accessToken);
