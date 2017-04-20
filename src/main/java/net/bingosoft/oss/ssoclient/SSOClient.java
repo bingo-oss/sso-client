@@ -16,6 +16,7 @@
 
 package net.bingosoft.oss.ssoclient;
 
+import net.bingosoft.oss.ssoclient.exception.InvalidCodeException;
 import net.bingosoft.oss.ssoclient.exception.InvalidTokenException;
 import net.bingosoft.oss.ssoclient.exception.TokenExpiredException;
 import net.bingosoft.oss.ssoclient.model.AccessToken;
@@ -85,7 +86,38 @@ public class SSOClient {
      * @throws TokenExpiredException 如果idToken已经过期
      */
     public Authentication verifyIdToken(String idToken) throws InvalidTokenException, TokenExpiredException {
-        throw new UnsupportedOperationException("Not implemented");
+        CacheProvider cp = cp();
+        Authentication authc = cp.get(idToken);
+        if(null != authc) {
+            if(!authc.isExpired()) {
+                return authc;
+            }else{
+                cp.remove(idToken);
+            }
+        }
+
+        //check is jwt token?
+        boolean jwt = checkJwtToken(idToken);
+        if(jwt) {
+            authc = tp().verifyIdToken(idToken);
+        }else{
+            throw new InvalidTokenException("idToken is not and jwt token:"+idToken);
+        }
+
+        cp.put(idToken, authc, authc.getExpires());
+
+        return authc;
+    }
+
+    /**
+     * 验证登录后获取到的授权码并返回访问令牌信息
+     *
+     * @throws InvalidTokenException
+     * @throws TokenExpiredException
+     */
+    public AccessToken obtainAccessToken(String authorizationCode) throws InvalidCodeException, TokenExpiredException {
+        AccessToken token = tp().obtainAccessTokenByAuthzCode(authorizationCode);
+        return token;
     }
     
     protected boolean checkJwtToken(String accessToken) {

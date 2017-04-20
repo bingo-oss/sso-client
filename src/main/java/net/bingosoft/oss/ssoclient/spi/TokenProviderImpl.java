@@ -17,17 +17,23 @@
 package net.bingosoft.oss.ssoclient.spi;
 
 import net.bingosoft.oss.ssoclient.SSOConfig;
+import net.bingosoft.oss.ssoclient.exception.HttpException;
+import net.bingosoft.oss.ssoclient.exception.InvalidCodeException;
 import net.bingosoft.oss.ssoclient.exception.InvalidTokenException;
 import net.bingosoft.oss.ssoclient.exception.TokenExpiredException;
 import net.bingosoft.oss.ssoclient.internal.Base64;
 import net.bingosoft.oss.ssoclient.internal.HttpClient;
+import net.bingosoft.oss.ssoclient.internal.JSON;
 import net.bingosoft.oss.ssoclient.internal.JWT;
 import net.bingosoft.oss.ssoclient.internal.Strings;
+import net.bingosoft.oss.ssoclient.model.AccessToken;
 import net.bingosoft.oss.ssoclient.model.Authentication;
 
+import java.net.HttpURLConnection;
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -45,7 +51,7 @@ public class TokenProviderImpl implements TokenProvider {
 
     @Override
     public Authentication verifyJwtAccessToken(String accessToken) throws InvalidTokenException {
-        Map<String, Object> map = JWT.verity(accessToken, publicKey);
+        Map<String, Object> map = JWT.verify(accessToken, publicKey);
         if(null == map) {
             map = retryVerify(accessToken);
             if(null == map) {
@@ -54,24 +60,62 @@ public class TokenProviderImpl implements TokenProvider {
         }
 
         //验证通过
-        Authentication authentication = new Authentication();
-        authentication.setUserId((String)map.remove("user_id"));
-        authentication.setUsername((String)map.remove("username"));
-        authentication.setClientId((String)map.remove("client_id"));
-        authentication.setScope((String)map.remove("scope"));
-
-        String expires = Strings.nullOrToString(map.remove("exp"));
-        authentication.setExpires(expires == null ? 0 : Long.parseLong(expires));
+        Authentication authentication = createAuthcFromMap(map);
         
         if(authentication.isExpired()){
             throw new TokenExpiredException(accessToken);
         }
         
-        for (Entry<String, Object> entry : map.entrySet()){
-            authentication.setAttribute(entry.getKey(),entry.getValue());
+        return authentication;
+    }
+
+    @Override
+    public Authentication verifyIdToken(String idToken) throws InvalidTokenException, TokenExpiredException {
+        Map<String, Object> map = JWT.verify(idToken, config.getClientSecret());
+        if(null == map){
+            throw new InvalidTokenException("Incorrect token : " + idToken);
+        }
+        //验证通过
+        Authentication authentication = createAuthcFromMap(map);
+        if(authentication.isExpired()){
+            throw new TokenExpiredException(idToken);
+        }
+        return authentication;
+    }
+
+    @Override
+    public AccessToken obtainAccessTokenByAuthzCode(String authzCode) throws InvalidCodeException, TokenExpiredException{
+        
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("grant_type","authorization_code");
+        params.put("code",authzCode);
+        params.put("client_id",config.getClientId());
+        params.put("redirect_uri","");
+
+        String json;
+        try {
+            json = HttpClient.post(config.getTokenEndpointUrl(),params);
+        } catch (HttpException e) {
+            if(e.getCode() < HttpURLConnection.HTTP_INTERNAL_ERROR){
+                throw new InvalidCodeException(e.getMessage());
+            }else{
+                throw e;
+            }
         }
         
-        return authentication;
+        Map<String, Object> map = JSON.decodeToMap(json);
+        
+        AccessToken token = createAccessTokenFromMap(map);
+        
+        if(null == token.getAccessToken() || token.getAccessToken().isEmpty()){
+            throw new InvalidCodeException("invalid authorization code: "+authzCode);
+        }
+        
+        if(token.isExpired()){
+            throw new TokenExpiredException("access token obtain by authorization code " +authzCode+ " is expired!");
+        }
+        
+        return token;
     }
 
     @Override
@@ -84,7 +128,7 @@ public class TokenProviderImpl implements TokenProvider {
         refreshPublicKey();
 
         //再verify一次
-        return JWT.verity(accessToken, publicKey);
+        return JWT.verify(accessToken, publicKey);
     }
 
     protected void refreshPublicKey() {
@@ -101,5 +145,30 @@ public class TokenProviderImpl implements TokenProvider {
         }catch (Exception e) {
             throw new RuntimeException("Decode public key error", e);
         }
+    }
+    
+    protected Authentication createAuthcFromMap(Map<String, Object> map){
+        Authentication authentication = new Authentication();
+        authentication.setUserId((String)map.remove("user_id"));
+        authentication.setUsername((String)map.remove("username"));
+        authentication.setClientId((String)map.remove("client_id"));
+        authentication.setScope((String)map.remove("scope"));
+
+        String expires = Strings.nullOrToString(map.remove("exp"));
+        authentication.setExpires(expires == null ? 0 : Long.parseLong(expires));
+        for (Entry<String, Object> entry : map.entrySet()){
+            authentication.setAttribute(entry.getKey(),entry.getValue());
+        }
+        return authentication;
+    }
+    
+    protected AccessToken createAccessTokenFromMap(Map<String, Object> map){
+        AccessToken token = new AccessToken();
+        token.setAccessToken((String)map.remove("access_token"));
+        token.setRefreshToken((String)map.remove("refresh_token"));
+        token.setTokenType((String)map.remove("token_type"));
+        String expiresIn = Strings.nullOrToString(map.remove("expires_in"));
+        token.setExpiresInFromNow(expiresIn==null?0:Integer.parseInt(expiresIn));
+        return token;
     }
 }

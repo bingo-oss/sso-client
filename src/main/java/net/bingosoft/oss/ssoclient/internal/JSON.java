@@ -24,4 +24,7 @@ public class JSON {
         JSONObject obj = com.alibaba.fastjson.JSON.parseObject(json);
         return obj.toJavaObject(Map.class);
     }
+    public static String encode(Object o){
+        return com.alibaba.fastjson.JSON.toJSONString(o);
+    }
 }

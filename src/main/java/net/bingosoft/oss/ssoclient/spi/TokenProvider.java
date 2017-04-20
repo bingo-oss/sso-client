@@ -16,14 +16,22 @@
 
 package net.bingosoft.oss.ssoclient.spi;
 
+import net.bingosoft.oss.ssoclient.exception.InvalidCodeException;
 import net.bingosoft.oss.ssoclient.exception.InvalidTokenException;
 import net.bingosoft.oss.ssoclient.exception.TokenExpiredException;
+import net.bingosoft.oss.ssoclient.model.AccessToken;
 import net.bingosoft.oss.ssoclient.model.Authentication;
 
 public interface TokenProvider {
-
+    
     Authentication verifyJwtAccessToken(String accessToken) throws InvalidTokenException, TokenExpiredException;
 
+    Authentication verifyIdToken(String idToken) throws InvalidTokenException, TokenExpiredException;
+    
     Authentication verifyBearerAccessToken(String accessToken);
 
+    /**
+     * 通过授权码获取AccessToken
+     */
+    AccessToken obtainAccessTokenByAuthzCode(String authzCode) throws InvalidCodeException,TokenExpiredException;
 }

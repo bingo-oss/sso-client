@@ -24,6 +24,7 @@ public class SSOConfig {
     protected String clientId;
     protected String clientSecret;
     protected String publicKeyEndpointUrl;
+    protected String tokenEndpointUrl;
 
     //todo :
 
@@ -77,6 +78,17 @@ public class SSOConfig {
     }
 
     /**
+     * 返回SSO生成access token的url
+     */
+    public String getTokenEndpointUrl() {
+        return tokenEndpointUrl;
+    }
+
+    public void setTokenEndpointUrl(String tokenEndpointUrl) {
+        this.tokenEndpointUrl = tokenEndpointUrl;
+    }
+
+    /**
      * 指定SSO服务器的基础地址,自动配置其他的地址属性。
      *
      * <p/>
@@ -96,6 +108,7 @@ public class SSOConfig {
 
         //todo :
         this.setPublicKeyEndpointUrl(baseUrl + "/publickey");
+        this.setTokenEndpointUrl(baseUrl+ "/oauth2/token");
         return this;
     }
 }

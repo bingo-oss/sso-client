@@ -22,4 +22,16 @@ public class Strings {
         }
         return o.toString();
     }
+    public static boolean isEmpty(String str){
+        return str == null || str.trim().isEmpty();
+    }
+    public static boolean equals(String str1, String str2){
+        if(str1 == null && str2 == null){
+            return true;
+        }else if(str1 == null){
+            return false;
+        }else {
+            return str1.equals(str2);
+        }
+    }
 }
