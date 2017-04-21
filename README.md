@@ -91,7 +91,7 @@ long expires = authc.getExpires();
 
 ### 3. 登录注销 (Login & Logout)
 
-对于普通的web应用，使用sdk按照如下方式接入品高SSO实现单点登录和单点注销。
+对于普通的web应用，使用SDK按照如下方式接入品高SSO实现单点登录和单点注销。
 
 #### 3.1 登录
 
@@ -230,7 +230,7 @@ todo
 
 ### 自定义缓存
 
-sdk中提供了简单的access token校验缓存实现，在实际应用中可以根据需求定制CacheProvider。
+SDK中提供了简单的access token校验缓存实现，在实际应用中可以根据需求定制CacheProvider。
 
 定制CacheProvider需要实现`CacheProvider`接口，并用实现类的对象覆盖默认的CacheProvider，示例如下：
 
