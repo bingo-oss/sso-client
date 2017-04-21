@@ -1,4 +1,4 @@
-[![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.bingosoft.oss/sso-client/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.bingosoft.oss/sso-client/badge.svg) [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 # 品高单点登录客户端(Java)
 
@@ -19,7 +19,7 @@
 
 |SDK 版本 | Java 版本|
 | ------ | -------  |
-|3.0.0   |6+        |
+|3.x.x   |6+        |
 
 ## 外部依赖
 |名称      | 版本    | 依赖说明|      
