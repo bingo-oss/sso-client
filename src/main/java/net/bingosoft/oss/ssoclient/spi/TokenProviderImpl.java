@@ -30,6 +30,7 @@ import net.bingosoft.oss.ssoclient.internal.Strings;
 import net.bingosoft.oss.ssoclient.model.AccessToken;
 import net.bingosoft.oss.ssoclient.model.Authentication;
 
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPublicKey;
@@ -106,9 +107,14 @@ public class TokenProviderImpl implements TokenProvider {
                 throw e;
             }
         }
-        
-        Map<String, Object> map = JSON.decodeToMap(json);
-        
+
+        Map<String, Object> map;
+        try {
+            map = JSON.decodeToMap(json);
+        } catch (Exception e) {
+            throw new RuntimeException("parse json error",e);
+        }
+
         AccessToken token = createAccessTokenFromMap(map);
         
         if(null == token.getAccessToken() || token.getAccessToken().isEmpty()){

@@ -74,7 +74,7 @@ public abstract class AbstractLogoutServlet extends HttpServlet {
             returnUrl = Urls.getServerContextUrl(req);
             
             String state = getStateQueryParam(req,resp);
-            if(Strings.isEmpty(state)){
+            if(!Strings.isEmpty(state)){
                 returnUrl = Urls.appendQueryString(returnUrl,"__state__",state);
             }
         }

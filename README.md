@@ -106,7 +106,7 @@ public class DemoServlet extends javax.servlet.http.HttpServlet{
 
 ### 3. 登录注销 (Login & Logout)
 
-对于普通的web应用，使用sdk按照如下方式接入品高SSO实现单点登录。
+对于普通的web应用，使用sdk按照如下方式接入品高SSO实现单点登录和单点注销。
 
 #### 3.1 登录
 
@@ -142,10 +142,10 @@ public class LoginServlet extends net.bingosoft.oss.ssoclient.servlet.AbstractLo
 </servlet-mapping>
 ```
 
-3. 设置登录跳转地址和身份校验忽略地址
+3. 设置登录跳转地址和登录校验忽略地址
 
 * 在web应用中，对所有需要登录的请求重定向到`/ssoclient/login`这个地址上进行单点登录
-* 忽略`/ssoclient/login`这个地址的用户身份校验防止重定向无限循环
+* 忽略`/ssoclient/login`这个地址的登录校验防止重定向无限循环
 
 这里以一个Filter示例：
 
@@ -317,3 +317,25 @@ http://www.example.com:80/demo/ssoclient/**
 * 应用注册的注销地址是不是应用配置的本地注销地址
 * 应用本地注销的地址是否被其他拦截器拦截
 
+----
+
+4. **配置好单点登录后，登录时抛出`HTTP Status 500 - parse json error`**
+
+答：
+* 检查`SSOConfig.getTokenEndpointUrl()`返回的地址是否正确，如果返回的结果是html代码，很有可能是这个地址配错了。
+* 检查`SSOConfig.getTokenEndpointUrl()`这个地址的返回结果是否正确。
+
+----
+
+5. **配置好单点登录后，登录时抛出`Connection refused: connect[xxx]`**
+
+答：
+* 检查`SSOConfig.getTokenEndpointUrl()`返回的地址，在web应用部署的服务器是否可以访问。
+
+----
+
+6. **为什么每次注销完成后，跳转回应用首页会有`__state__`这个参数？**
+
+答：注销完成后，跳转回项目首页为了防止浏览器缓存导致没有自动跳转到登录页，SDK默认自动增加了这个参数，参数值是随机数。
+
+如果不希望增加这个参数，可以重写`AbstractLogoutServlet.getStateQueryParam(req,resp)`这个方法，返回空值。

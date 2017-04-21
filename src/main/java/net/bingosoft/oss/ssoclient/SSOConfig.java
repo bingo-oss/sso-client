@@ -150,9 +150,9 @@ public class SSOConfig {
         }
         //todo :
         this.setPublicKeyEndpointUrl(baseUrl + "/publickey");
-        this.setTokenEndpointUrl(baseUrl+ "/oauth2/token");
-        this.setAuthorizationEndpointUrl(baseUrl+"/oauth2/authorize");
-        this.setOauthLogoutEndpoint(baseUrl+"/oauth2/logout");
+        this.setTokenEndpointUrl(baseUrl + "/oauth2/token");
+        this.setAuthorizationEndpointUrl(baseUrl + "/oauth2/authorize");
+        this.setOauthLogoutEndpoint(baseUrl + "/oauth2/logout");
         return this;
     }
     

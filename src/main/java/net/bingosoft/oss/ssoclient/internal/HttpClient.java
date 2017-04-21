@@ -59,7 +59,7 @@ public class HttpClient {
                 connection.disconnect();
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getMessage(),e);
         }
     }
     
@@ -83,7 +83,11 @@ public class HttpClient {
                         connection.setRequestProperty(entry.getKey(),entry.getValue());
                     }
                 }
-                connection.connect();
+                try {
+                    connection.connect();
+                } catch (IOException e) {
+                    throw new IOException(e.getMessage()+"["+url+"]",e);
+                }
                 if(params != null && !params.isEmpty()){
                     os = connection.getOutputStream();
                     osw = new OutputStreamWriter(os,"UTF-8");
@@ -160,7 +164,7 @@ public class HttpClient {
                 connection.disconnect();
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getMessage(),e);
         }
     }
 }
