@@ -14,6 +14,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
+/**
+ * @since 3.0.1
+ */
 public abstract class AbstractLoginServlet extends HttpServlet{
     
     protected static final String ID_TOKEN_PARAM                 = "id_token";

@@ -83,6 +83,8 @@ public class SSOClient {
      *
      * @throws InvalidTokenException 如果idToken是无效的
      * @throws TokenExpiredException 如果idToken已经过期
+     * 
+     * @since 3.0.1
      */
     public Authentication verifyIdToken(String idToken) throws InvalidTokenException, TokenExpiredException {
         CacheProvider cp = cp();

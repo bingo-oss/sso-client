@@ -11,7 +11,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-
+/**
+ * @since 3.0.1
+ */
 public abstract class AbstractLogoutServlet extends HttpServlet {
 
     protected static final String POST_LOGOUT_REDIRECT_URI_PARAM = "post_logout_redirect_uri";

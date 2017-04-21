@@ -16,6 +16,9 @@
 
 package net.bingosoft.oss.ssoclient.model;
 
+/**
+ * @since 3.0.1
+ */
 public class AccessToken {
     private String accessToken;
     private String refreshToken;

@@ -70,7 +70,9 @@ public class SSOConfig {
     }
 
     /**
-     * 返回应用的回调地址(redirect_uri) 
+     * 返回应用的回调地址(redirect_uri)
+     * 
+     * @since 3.0.1
      */
     public String getRedirectUri() {
         return redirectUri;
@@ -93,6 +95,8 @@ public class SSOConfig {
 
     /**
      * 返回SSO生成access token的url
+     * 
+     * @since 3.0.1
      */
     public String getTokenEndpointUrl() {
         return tokenEndpointUrl;
@@ -104,6 +108,8 @@ public class SSOConfig {
 
     /**
      * 返回SSO登录验证地址
+     * 
+     * @since 3.0.1
      */
     public String getAuthorizationEndpointUrl() {
         return authorizationEndpointUrl;
@@ -114,6 +120,8 @@ public class SSOConfig {
 
     /**
      * 返回SSO单点注销地址
+     * 
+     * @since 3.0.1
      */
     public String getOauthLogoutEndpoint() {
         return oauthLogoutEndpoint;

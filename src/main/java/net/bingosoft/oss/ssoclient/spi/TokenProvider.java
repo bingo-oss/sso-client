@@ -32,6 +32,8 @@ public interface TokenProvider {
 
     /**
      * 通过授权码获取AccessToken
+     * 
+     * @since 3.0.1
      */
     AccessToken obtainAccessTokenByAuthzCode(String authzCode) throws InvalidCodeException,TokenExpiredException;
 }

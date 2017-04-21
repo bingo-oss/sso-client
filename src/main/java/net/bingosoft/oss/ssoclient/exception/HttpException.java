@@ -1,5 +1,8 @@
 package net.bingosoft.oss.ssoclient.exception;
 
+/**
+ * @since 3.0.1
+ */
 public class HttpException extends RuntimeException {
     
     private final int code;
