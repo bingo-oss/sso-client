@@ -90,6 +90,8 @@ public abstract class AbstractLoginServlet extends HttpServlet{
      * 设置跳转到登录页面时的<code>state</code>参数。
      * 
      * 默认生成一串随机{@link UUID},并去掉'-'符号作为<code>state</code>。
+     * 
+     * @see #checkOauth2LoginState(HttpServletRequest, HttpServletResponse) 
      */
     protected String setOauth2LoginState(HttpServletRequest req, HttpServletResponse resp, String authzEndpoint){
         String state = UUID.randomUUID().toString().replace("-","");
@@ -112,9 +114,9 @@ public abstract class AbstractLoginServlet extends HttpServlet{
      * 这个方法构造的url一般是如下格式：
      * 
      * <pre>
-     *     http(s)://${domain}:${port}/${contextPath}/ssoclient?${queryString}
+     *     http(s)://${domain}:${port}/${contextPath}/ssoclient/login?${queryString}
      *     示例：
-     *     http://www.example.com:80/demo/ssoclient?name=admin
+     *     http://www.example.com:80/demo/ssoclient/login?name=admin
      * </pre>
      * 
      * 一般情况下要求注册client的时候，填写的回调地址(redirect_uri)必须能够验证这里构造的url实现自动完成登录的过程。
