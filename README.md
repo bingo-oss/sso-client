@@ -123,7 +123,7 @@ public class LoginServlet extends net.bingosoft.oss.ssoclient.servlet.AbstractLo
     protected void localLogin(HttpServletRequest req, HttpServletResponse resp, Authentication authc,
                               AccessToken token) {
         // 根据校验结果完成本地登录
-        req.getSession().setAttribute("user",new LoginUser(authc,token));
+        // 省略本地登录代码...
     }
 }
 ```
@@ -157,11 +157,7 @@ public class LoginFilter implements javax.servlet.Filter {
         HttpServletRequest req = (HttpServletRequest)request;
         HttpServletResponse resp = (HttpServletResponse)response;        
         // 判断是否登录，如果已经登录就不需要处理了
-        Object o = req.getSession().getAttribute("user");
-        if(o != null && o instanceof LoginUser){
-            chain.doFilter(req,resp);
-            return;
-        }
+        // 省略判断是否已经登录的代码...
         
         // 忽略到LoginServlet的请求
         String url = req.getRequestURI();
@@ -210,7 +206,7 @@ public class LoginServlet extends AbstractLoginServlet {
     protected void localLogin(HttpServletRequest req, HttpServletResponse resp, 
                               Authentication authc, AccessToken token) {
         // 注销本地用户
-        req.getSession().setAttribute("user",new LoginUser(authc,token));
+        // 省略本地注销的代码...
     }
 }
 ```
@@ -286,7 +282,7 @@ client.setCacheProvider(new CustomCacheProvider());
 
 ## 常见问题
 
-1. **配置好web应用接入SSO，在跳转到SSO时浏览器收到`invalid_request:invalid redirect_uri`错误。**
+**问：配置好单点登录后，在跳转到SSO时浏览器收到`invalid_request:invalid redirect_uri`错误。**
 
 答：这是由于注册应用时设置的回调地址(redirect_uri)不能匹配sdk生成的回调地址导致的，SDK生成的回调地址一般是如下格式：
 
@@ -303,23 +299,19 @@ http://www.example.com:80/demo/ssoclient/**
 
 ----
 
-2. **配置好单点注销之后，为什么没有跳转到SSO注销？**
+**问：配置好单点登录后，访问应用后出现重定向次数过多**
+
+答：检查是否已经忽略`/ssoclient/login`这个地址的登录校验。
+
+----
+
+**问：配置好单点登录后，登录时抛出`Connection refused: connect[xxx]`**
 
 答：
-* 检查配置的SSO注销地址，默认是以`/oauth2_logout`结尾的地址
-* 检查配置的SSO注销地址是否被其他拦截器拦截
-
+* 检查`SSOConfig.getTokenEndpointUrl()`返回的地址，在web应用部署的服务器是否可以访问。
 ----
 
-3. **配置好单点注销之后，跳转到SSO注销完成，为什么没有本地登录没有被注销？**
-
-答：SSO注销完成后，会根据应用在SSO注册的注销地址(logout_uri)向应用发注销请求，如果本地注销不了，需要检查：
-* 应用注册的注销地址是不是应用配置的本地注销地址
-* 应用本地注销的地址是否被其他拦截器拦截
-
-----
-
-4. **配置好单点登录后，登录时抛出`HTTP Status 500 - parse json error`**
+**问：配置好单点登录后，登录时抛出`HTTP Status 500 - parse json error`**
 
 答：
 * 检查`SSOConfig.getTokenEndpointUrl()`返回的地址是否正确，如果返回的结果是html代码，很有可能是这个地址配错了。
@@ -327,15 +319,25 @@ http://www.example.com:80/demo/ssoclient/**
 
 ----
 
-5. **配置好单点登录后，登录时抛出`Connection refused: connect[xxx]`**
+**问：配置好单点注销之后，为什么没有跳转到SSO注销？**
 
 答：
-* 检查`SSOConfig.getTokenEndpointUrl()`返回的地址，在web应用部署的服务器是否可以访问。
+* 检查配置的SSO注销地址，默认是以`/oauth2_logout`结尾的地址
+* 检查配置的SSO注销地址是否被其他拦截器拦截
 
 ----
 
-6. **为什么每次注销完成后，跳转回应用首页会有`__state__`这个参数？**
+**问：配置好单点注销之后，跳转到SSO注销完成，为什么没有本地登录没有被注销？**
+
+答：SSO注销完成后，会根据应用在SSO注册的注销地址(logout_uri)向应用发注销请求，如果本地注销不了，需要检查：
+* 应用注册的注销地址是不是应用配置的本地注销地址
+* 应用本地注销的地址是否被其他拦截器拦截
+
+----
+
+**问：为什么每次注销完成后，跳转回应用首页会有`__state__`这个参数？**
 
 答：注销完成后，跳转回项目首页为了防止浏览器缓存导致没有自动跳转到登录页，SDK默认自动增加了这个参数，参数值是随机数。
 
 如果不希望增加这个参数，可以重写`AbstractLogoutServlet.getStateQueryParam(req,resp)`这个方法，返回空值。
+
