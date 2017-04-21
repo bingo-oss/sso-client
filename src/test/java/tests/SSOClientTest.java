@@ -189,7 +189,7 @@ public class SSOClientTest {
                 .withHeader("Authorization", equalTo(basicHeader))
                 .willReturn(aResponse().withStatus(200).withBody(JSON.encode(resp)));
         stubFor(mb);
-        AccessToken accessToken = client.obtainAccessToken(authCode);
+        AccessToken accessToken = client.obtainAccessTokenByCode(authCode);
         assertAccessToken(accessToken);
         
         // 无效的code
@@ -201,7 +201,7 @@ public class SSOClientTest {
         boolean invalid = false;
         String msg = null;
         try {
-            client.obtainAccessToken(authCode);
+            client.obtainAccessTokenByCode(authCode);
         } catch (InvalidCodeException e) {
             invalid = true;
             msg = e.getMessage();
@@ -221,7 +221,7 @@ public class SSOClientTest {
         invalid = false;
         msg = null;
         try {
-            client.obtainAccessToken(authCode);
+            client.obtainAccessTokenByCode(authCode);
         } catch (InvalidCodeException e) {
             invalid = true;
             msg = e.getMessage();
@@ -242,7 +242,7 @@ public class SSOClientTest {
         boolean expired = false;
         msg = null;
         try {
-            client.obtainAccessToken(authCode);
+            client.obtainAccessTokenByCode(authCode);
         } catch (InvalidCodeException e) {
             e.printStackTrace();
         } catch (TokenExpiredException e) {
@@ -262,7 +262,7 @@ public class SSOClientTest {
         stubFor(mb);
         boolean runtimeException = false;
         try {
-            client.obtainAccessToken(authCode);
+            client.obtainAccessTokenByCode(authCode);
         } catch (InvalidCodeException e) {
             e.printStackTrace();
         } catch (TokenExpiredException e) {
@@ -401,7 +401,7 @@ public class SSOClientTest {
         client.verifyAccessToken(jwtToken);
         client.verifyAccessToken(UUID.randomUUID().toString());
         client.verifyIdToken(jwtToken);
-        client.obtainAccessToken(authCode);
+        client.obtainAccessTokenByCode(authCode);
         Assert.assertTrue(used.get("verifyJwtAccessToken"));
         Assert.assertTrue(used.get("verifyBearerAccessToken"));
         Assert.assertTrue(used.get("verifyIdToken"));

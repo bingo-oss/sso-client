@@ -114,7 +114,7 @@ public class SSOClient {
      * @throws InvalidTokenException
      * @throws TokenExpiredException
      */
-    public AccessToken obtainAccessToken(String authorizationCode) throws InvalidCodeException, TokenExpiredException {
+    public AccessToken obtainAccessTokenByCode(String authorizationCode) throws InvalidCodeException, TokenExpiredException {
         AccessToken token = tp().obtainAccessTokenByAuthzCode(authorizationCode);
         return token;
     }

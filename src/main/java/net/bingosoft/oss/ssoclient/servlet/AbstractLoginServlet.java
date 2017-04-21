@@ -14,10 +14,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
-public abstract class LoginServlet extends HttpServlet{
+public abstract class AbstractLoginServlet extends HttpServlet{
     
-    protected static final String ID_TOKEN_PARAM = "id_token";
-    protected static final String AUTHZ_CODE_PARAM = "code";
+    protected static final String ID_TOKEN_PARAM                 = "id_token";
+    protected static final String AUTHZ_CODE_PARAM               = "code";
     
     private SSOClient client;
     
@@ -29,39 +29,14 @@ public abstract class LoginServlet extends HttpServlet{
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        req.setCharacterEncoding("UTF-8");
-        resp.setCharacterEncoding("UTF-8");
-        
-        if(isLogin(req)){
-            gotoLoginSuccess(req,resp);
+        if(isRedirectedFromSSO(req)){
+            gotoLocalLogin(req,resp);
         }else {
-            gotoLogin(req,resp);
+            redirectToSSOLogin(req,resp);
         }
     }
 
-    protected void gotoLoginSuccess(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String state = req.getParameter("state");
-        if(!req.getSession().getId().equals(state)){
-            resp.sendError(HttpURLConnection.HTTP_BAD_REQUEST,"state has been change!");
-            return;
-        }
-        
-        String idToken = req.getParameter(ID_TOKEN_PARAM);
-        String code = req.getParameter(AUTHZ_CODE_PARAM);
-        Authentication authc = client.verifyIdToken(idToken);
-        AccessToken token = client.obtainAccessToken(code);
-        
-        loginSuccess(req,resp,authc,token);
-        
-        String returnUrl = req.getParameter("return_url");
-        if(Strings.isEmpty(returnUrl)){
-            returnUrl = Urls.getServerBaseUrl(req);
-        }
-        resp.sendRedirect(returnUrl);
-    }
-
-
-    protected void gotoLogin(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    protected void redirectToSSOLogin(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String redirectUri = buildRedirectUri(req,resp);
         String loginUrl = buildLoginUrl(req,resp,redirectUri);
         
@@ -69,6 +44,28 @@ public abstract class LoginServlet extends HttpServlet{
         
     }
 
+    protected void gotoLocalLogin(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+        String state = req.getParameter("state");
+        if(!req.getSession().getId().equals(state)){
+            resp.sendError(HttpURLConnection.HTTP_BAD_REQUEST,"state has been change!");
+            return;
+        }
+
+        String idToken = req.getParameter(ID_TOKEN_PARAM);
+        String code = req.getParameter(AUTHZ_CODE_PARAM);
+        
+        Authentication authc = client.verifyIdToken(idToken);
+        AccessToken token = client.obtainAccessTokenByCode(code);
+
+        localLogin(req,resp,authc,token);
+
+        String returnUrl = req.getParameter("return_url");
+        if(Strings.isEmpty(returnUrl)){
+            returnUrl = Urls.getServerBaseUrl(req);
+        }
+        resp.sendRedirect(returnUrl);
+    }
+    
     protected String buildLoginUrl(HttpServletRequest req, HttpServletResponse resp, String redirectUri) {
         String authzEndpoint = client.getConfig().getAuthorizationEndpointUrl();
         authzEndpoint = Urls.appendQueryString(authzEndpoint,"response_type","code id_token");
@@ -77,7 +74,7 @@ public abstract class LoginServlet extends HttpServlet{
         authzEndpoint = Urls.appendQueryString(authzEndpoint,"state",req.getSession().getId());
         return authzEndpoint;
     }
-
+    
     /**
      * 构造SSO登录完成后的回调url，一般情况下，在注册SSO应用的时候，需要保证这个uri可以通过SSO的验证。
      * 这个方法构造的url一般是如下格式：
@@ -103,7 +100,7 @@ public abstract class LoginServlet extends HttpServlet{
         }
     }
 
-    protected boolean isLogin(HttpServletRequest req){
+    protected boolean isRedirectedFromSSO(HttpServletRequest req){
         String idToken = req.getParameter(ID_TOKEN_PARAM);
         String accessToken = req.getParameter(AUTHZ_CODE_PARAM);
         return !Strings.isEmpty(idToken) && !Strings.isEmpty(accessToken);
@@ -114,10 +111,10 @@ public abstract class LoginServlet extends HttpServlet{
     /**
      * 返回一个{@link SSOClient}对象
      */
-    protected abstract SSOClient getClient(ServletConfig config);
+    protected abstract SSOClient getClient(ServletConfig config) throws ServletException ;
 
     /**
      * 用户在SSO登录成功后，进行本地登录
      */
-    protected abstract void loginSuccess(HttpServletRequest req, HttpServletResponse resp, Authentication authc, AccessToken token);
+    protected abstract void localLogin(HttpServletRequest req, HttpServletResponse resp, Authentication authc, AccessToken token) throws ServletException, IOException ;
 }

@@ -27,6 +27,7 @@ public class SSOConfig {
     protected String publicKeyEndpointUrl;
     protected String tokenEndpointUrl;
     protected String authorizationEndpointUrl;
+    protected String oauthLogoutEndpoint;
 
     //todo :
 
@@ -112,6 +113,17 @@ public class SSOConfig {
     }
 
     /**
+     * 返回SSO单点注销地址
+     */
+    public String getOauthLogoutEndpoint() {
+        return oauthLogoutEndpoint;
+    }
+
+    public void setOauthLogoutEndpoint(String oauthLogoutEndpoint) {
+        this.oauthLogoutEndpoint = oauthLogoutEndpoint;
+    }
+
+    /**
      * 指定SSO服务器的基础地址,自动配置其他的地址属性。
      *
      * <p/>
@@ -132,6 +144,7 @@ public class SSOConfig {
         this.setPublicKeyEndpointUrl(baseUrl + "/publickey");
         this.setTokenEndpointUrl(baseUrl+ "/oauth2/token");
         this.setAuthorizationEndpointUrl(baseUrl+"/oauth2/authorize");
+        this.setOauthLogoutEndpoint(baseUrl+"/oauth2/logout");
         return this;
     }
     
