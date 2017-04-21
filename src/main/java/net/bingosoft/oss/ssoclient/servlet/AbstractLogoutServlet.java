@@ -71,13 +71,30 @@ public abstract class AbstractLogoutServlet extends HttpServlet {
 
         String returnUrl = req.getParameter(POST_LOGOUT_REDIRECT_URI_PARAM);
         if(Strings.isEmpty(returnUrl)){
-            returnUrl = Urls.getServerBaseUrl(req);
-            returnUrl = Urls.appendQueryString(returnUrl,"__time__",String.valueOf(System.currentTimeMillis()));
+            returnUrl = Urls.getServerContextUrl(req);
+            
+            String state = getStateQueryParam(req,resp);
+            if(Strings.isEmpty(state)){
+                returnUrl = Urls.appendQueryString(returnUrl,"__state__",state);
+            }
         }
 
         logoutUrl = Urls.appendQueryString(logoutUrl,POST_LOGOUT_REDIRECT_URI_PARAM,returnUrl);
         return logoutUrl;
     }
+
+    /**
+     * 在SSO注销之后，默认会跳转回到应用根地址，这个时候有可能由于缓存导致浏览器不会自动跳转到登录页。
+     * 
+     * 这里返回一个随机状态码让浏览器不使用缓存页面。
+     * 
+     * 默认状态码是当前是时间毫秒数，如果不希望增加这个状态码，可以重写这个方法返回一个空值。
+     * 
+     */
+    protected String getStateQueryParam(HttpServletRequest req, HttpServletResponse resp){
+        return String.valueOf(System.currentTimeMillis());
+    }
+    
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         doGet(req,resp);

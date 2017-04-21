@@ -24,6 +24,15 @@ public class Urls {
         }
     }
     
+    public static String getServerContextUrl(final HttpServletRequest request){
+        String url = getServerBaseUrl(request);
+        url += request.getContextPath();
+        if (url.endsWith("/")){
+            url = url.substring(0, url.length()-1);
+        }
+        return url;
+    }
+    
     public static String getServerBaseUrl(final HttpServletRequest request){
         String schema=request.getHeader("x-forwarded-proto");
         if(schema==null || "".equals(schema)){
@@ -36,11 +45,6 @@ public class Urls {
         }
         String url=schema+host;
         url=regularUrl(url);
-
-        url+=request.getContextPath();
-        if (url.endsWith("/")){
-            url = url.substring(0, url.length()-1);
-        }
 
         return url;
     }

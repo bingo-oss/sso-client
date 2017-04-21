@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.UUID;
 
 /**
  * @since 3.0.1
@@ -48,25 +49,53 @@ public abstract class AbstractLoginServlet extends HttpServlet{
     }
 
     protected void gotoLocalLogin(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-        String state = req.getParameter("state");
-        if(!req.getSession().getId().equals(state)){
+        if(checkOauth2LoginState(req,resp)){
+            String idToken = req.getParameter(ID_TOKEN_PARAM);
+            String code = req.getParameter(AUTHZ_CODE_PARAM);
+
+            Authentication authc = client.verifyIdToken(idToken);
+            AccessToken token = client.obtainAccessTokenByCode(code);
+
+            localLogin(req,resp,authc,token);
+
+            String returnUrl = req.getParameter("return_url");
+            if(Strings.isEmpty(returnUrl)){
+                returnUrl = Urls.getServerContextUrl(req);
+            }
+            resp.sendRedirect(returnUrl);
+        }else {
             resp.sendError(HttpURLConnection.HTTP_BAD_REQUEST,"state has been change!");
-            return;
         }
+    }
 
-        String idToken = req.getParameter(ID_TOKEN_PARAM);
-        String code = req.getParameter(AUTHZ_CODE_PARAM);
-        
-        Authentication authc = client.verifyIdToken(idToken);
-        AccessToken token = client.obtainAccessTokenByCode(code);
-
-        localLogin(req,resp,authc,token);
-
-        String returnUrl = req.getParameter("return_url");
-        if(Strings.isEmpty(returnUrl)){
-            returnUrl = Urls.getServerBaseUrl(req);
+    /**
+     * OAuth登录过程需要校验<code>state</code>参数是否变化。
+     * 
+     * 默认情况下这个<code>state</code>是调整到SSO登录时生成的随机码，如果这个状态被改变说明请求可能被篡改。
+     * 
+     * 校验通过返回<code>true</code>，不通过返回false。
+     * 
+     * @see #setOauth2LoginState(HttpServletRequest, HttpServletResponse, String) 
+     */
+    protected boolean checkOauth2LoginState(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String state = req.getParameter("state");
+        String sessionState = (String) req.getSession().getAttribute("oauth2_login_state");
+        if(!Strings.equals(sessionState,state)){
+            return false;
         }
-        resp.sendRedirect(returnUrl);
+        return true;
+    }
+
+    /**
+     * 设置跳转到登录页面时的<code>state</code>参数。
+     * 
+     * 默认生成一串随机{@link UUID},并去掉'-'符号作为<code>state</code>。
+     */
+    protected String setOauth2LoginState(HttpServletRequest req, HttpServletResponse resp, String authzEndpoint){
+        String state = UUID.randomUUID().toString().replace("-","");
+        req.getSession().setAttribute("oauth2_login_state", state);
+        authzEndpoint = Urls.appendQueryString(authzEndpoint,"state",state);
+        return authzEndpoint;
     }
     
     protected String buildLoginUrl(HttpServletRequest req, HttpServletResponse resp, String redirectUri) {
@@ -74,7 +103,7 @@ public abstract class AbstractLoginServlet extends HttpServlet{
         authzEndpoint = Urls.appendQueryString(authzEndpoint,"response_type","code id_token");
         authzEndpoint = Urls.appendQueryString(authzEndpoint,"client_id",client.getConfig().getClientId());
         authzEndpoint = Urls.appendQueryString(authzEndpoint,"redirect_uri",redirectUri);
-        authzEndpoint = Urls.appendQueryString(authzEndpoint,"state",req.getSession().getId());
+        authzEndpoint = setOauth2LoginState(req,resp,authzEndpoint);
         return authzEndpoint;
     }
     
@@ -93,8 +122,8 @@ public abstract class AbstractLoginServlet extends HttpServlet{
      * 如果由于其他原因，回调地址不能设置为匹配这个地址的表达式，请重写这个方法，并自己处理登录完成后的回调请求。
      */
     protected String buildRedirectUri(HttpServletRequest req, HttpServletResponse resp){
-        String contextPath = Urls.getServerBaseUrl(req);
-        String current = contextPath + req.getRequestURI();
+        String baseUrl = Urls.getServerBaseUrl(req);
+        String current = baseUrl + req.getRequestURI();
         String queryString = req.getQueryString();
         if(Strings.isEmpty(queryString)){
             return current;

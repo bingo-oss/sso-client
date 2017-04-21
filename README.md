@@ -86,6 +86,7 @@ public class DemoServlet extends javax.servlet.http.HttpServlet{
     public void init() throws ServletException {
         // 使用前面的构造器创建一个SSOClient对象
         this.client = new ClientGenerator().generate();
+        
     }
     
     @Override
