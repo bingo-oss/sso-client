@@ -179,15 +179,14 @@ public class LoginFilter implements javax.servlet.Filter {
 1. 实现一个`AbstractLogoutServlet`的Servlet:
 
 ```java
-public class LoginServlet extends AbstractLoginServlet {
+public class LogoutServlet extends net.bingosoft.oss.ssoclient.servlet.AbstractLogoutServlet {
     @Override
     protected SSOClient getClient(ServletConfig config) {
         // 返回一个已经配置好的SSOClient
-        return new Client();
+        return new SSOClient();
     }
     @Override
-    protected void localLogin(HttpServletRequest req, HttpServletResponse resp, 
-                              Authentication authc, AccessToken token) {
+    protected void localLogout(HttpServletRequest req, HttpServletResponse resp) {
         // 省略本地注销的代码...
     }
 }
