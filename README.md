@@ -67,41 +67,34 @@ SSOClient client = new SSOClient(config);
 在Restful API中，对于遵循[OAuth 2.0](https://tools.ietf.org/html/rfc6749)标准协议的请求，使用如下方式校验用户身份：
 
 ```java
-public class DemoServlet extends javax.servlet.http.HttpServlet{
-    // 省略client初始化过程    
-    protected SSOClient client;
-    
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-        // 获取access token
-        String accessToken = SSOUtils.extractAccessToken(req);
-        // 验证access token
-        Authentication authc = null;
-        try{
-            authc = client.verifyAccessToken(accessToken);            
-        }catch (InvalidTokenException e){
-            // 处理access token无效的情况
-        }catch (TokenExpiredException e){
-            // 处理access token过期的情况
-        }
-        // 获取用户id
-        String userId = authc.getUserId();
-        // 获取用户登录名
-        String username = authc.getUsername();
-        // 获取客户端应用id
-        String client = authc.getClientId();
-        // 获取access token的授权列表
-        String scope = authc.getScope();
-        // 获取access token的过期时间，这个过期时间指的是距离标准日期1970-01-01T00:00:00Z UTC的秒数
-        long expires = authc.getExpires();
-        
-        // 根据Authentication获取用户其他信息的业务代码省略...
-        
-        // 返回处理成功的结果
-        resp.getWriter().write("ok");
-    }
+// HttpServletRequest对象
+HttpServletRequest req;
+
+// 获取access token
+String accessToken = SSOUtils.extractAccessToken(req);
+// 验证access token
+Authentication authc = null;
+try{
+    authc = client.verifyAccessToken(accessToken);            
+}catch (InvalidTokenException e){
+    // 处理access token无效的情况
+}catch (TokenExpiredException e){
+    // 处理access token过期的情况
 }
+// 获取用户id
+String userId = authc.getUserId();
+// 获取用户登录名
+String username = authc.getUsername();
+// 获取客户端应用id
+String client = authc.getClientId();
+// 获取access token的授权列表
+String scope = authc.getScope();
+// 获取access token的过期时间，这个过期时间指的是距离标准日期1970-01-01T00:00:00Z UTC的秒数
+long expires = authc.getExpires();
+
+// 根据Authentication获取用户其他信息的业务代码省略...
+
+// 返回处理成功的结果
 ```
 
 ### 3. 登录注销 (Login & Logout)
