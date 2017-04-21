@@ -17,10 +17,18 @@
 package net.bingosoft.oss.ssoclient.spi;
 
 public interface CacheProvider {
-
+    /**
+     * 根据传入的key获取已缓存的对象
+     */
     <T> T get(String key);
 
+    /**
+     * 根据传入的key和item缓存对象item，这里expires是缓存过期时间，在缓存过期后需要清理缓存
+     */
     void put(String key, Object item, long expires);
 
+    /**
+     * 根据key将缓存的对象清除
+     */
     void remove(String key);
 }

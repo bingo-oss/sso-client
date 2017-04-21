@@ -30,7 +30,8 @@ public class Authentication {
     protected String clientId;
     protected String scope;
     /**
-     * 过期时间，单位：秒
+     * 过期时间，指的是距离标准日期1970-01-01T00:00:00Z UTC的秒数
+     * 单位：秒
      * 参考：http://self-issued.info/docs/draft-ietf-oauth-json-web-token.html#expDef
      */
     protected long   expires;
