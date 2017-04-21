@@ -67,12 +67,11 @@ SSOClient client = new SSOClient(config);
 在Restful API中，对于遵循[OAuth 2.0](https://tools.ietf.org/html/rfc6749)标准协议的请求，使用如下方式校验用户身份：
 
 ```java
-// HttpServletRequest对象
 HttpServletRequest req;
 
 // 获取access token
 String accessToken = SSOUtils.extractAccessToken(req);
-// 验证access token
+
 Authentication authc = null;
 try{
     authc = client.verifyAccessToken(accessToken);            
@@ -81,20 +80,13 @@ try{
 }catch (TokenExpiredException e){
     // 处理access token过期的情况
 }
-// 获取用户id
+// userId:用户ID,username:用户登录名(loginName),clientId:应用ID,scope:授权列表，expires:过期时间
 String userId = authc.getUserId();
-// 获取用户登录名
 String username = authc.getUsername();
-// 获取客户端应用id
 String client = authc.getClientId();
-// 获取access token的授权列表
 String scope = authc.getScope();
 // 获取access token的过期时间，这个过期时间指的是距离标准日期1970-01-01T00:00:00Z UTC的秒数
 long expires = authc.getExpires();
-
-// 根据Authentication获取用户其他信息的业务代码省略...
-
-// 返回处理成功的结果
 ```
 
 ### 3. 登录注销 (Login & Logout)
@@ -115,7 +107,6 @@ public class LoginServlet extends net.bingosoft.oss.ssoclient.servlet.AbstractLo
     @Override
     protected void localLogin(HttpServletRequest req, HttpServletResponse resp, Authentication authc,
                               AccessToken token) {
-        // 根据校验结果完成本地登录
         // 省略本地登录代码...
     }
 }
@@ -149,7 +140,6 @@ public class LoginFilter implements javax.servlet.Filter {
                          FilterChain chain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest)request;
         HttpServletResponse resp = (HttpServletResponse)response;        
-        // 判断是否登录，如果已经登录就不需要处理了
         // 省略判断是否已经登录的代码...
         
         // 忽略到LoginServlet的请求
@@ -198,7 +188,6 @@ public class LoginServlet extends AbstractLoginServlet {
     @Override
     protected void localLogin(HttpServletRequest req, HttpServletResponse resp, 
                               Authentication authc, AccessToken token) {
-        // 注销本地用户
         // 省略本地注销的代码...
     }
 }
@@ -242,27 +231,13 @@ todo
 
 ### 自定义缓存
 
-sdk中提供了简单的access token校验缓存实现`net.bingosoft.oss.ssoclient.spi.CacheProviderImpl`，在实际应用中可以根据需求定制CacheProvider。
+sdk中提供了简单的access token校验缓存实现，在实际应用中可以根据需求定制CacheProvider。
 
 定制CacheProvider需要实现`CacheProvider`接口，并用实现类的对象覆盖默认的CacheProvider，示例如下：
 
 ```java
-// 创建新的CacheProvider实现
 class CustomCacheProvider implements net.bingosoft.oss.ssoclient.spi.CacheProvider{
-    @Override
-    public <T> T get(String key) {
-        // 根据传入的key获取已缓存的对象，在校验access token的过程中，这里传入的key是access token
-    }
-
-    @Override
-    public void put(String key, Object item, long expires) {
-        // 根据传入的key和item缓存对象item，这里expires是缓存过期时间，在缓存过期后需要清理缓存
-    }
-
-    @Override
-    public void remove(String key) {
-        // 根据key将缓存的对象清除，在校验access token的过程中，这里传入的key是access token
-    }
+    // 省略实现代码...
 }
 ```
 
