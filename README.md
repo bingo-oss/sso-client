@@ -241,10 +241,10 @@ class CustomCacheProvider implements net.bingosoft.oss.ssoclient.spi.CacheProvid
 }
 ```
 
+使用定制的CacheProvider对象
+
 ```java
-// 使用定制的CacheProvider对象
 SSOClient client = new SSOClient(config);
-// 设置client对象的CacheProvider
 client.setCacheProvider(new CustomCacheProvider());
 ```
 
@@ -252,7 +252,7 @@ client.setCacheProvider(new CustomCacheProvider());
 
 **问：配置好单点登录后，在跳转到SSO时浏览器收到`invalid_request:invalid redirect_uri`错误。**
 
-答：这是由于注册应用时设置的回调地址(redirect_uri)不能匹配sdk生成的回调地址导致的，SDK生成的回调地址一般是如下格式：
+答：这是由于注册应用时设置的回调地址(redirect_uri)不能匹配SDK生成的回调地址导致的，SDK生成的回调地址一般是如下格式：
 
 ```
 http(s)://${domain}:${port}/${contextPath}/ssoclient/login?${queryString}
@@ -275,23 +275,23 @@ http://www.example.com:80/demo/ssoclient/**
 
 **问：配置好单点登录后，登录时抛出`Connection refused: connect[xxx]`**
 
-答：
-* 检查`SSOConfig.getTokenEndpointUrl()`返回的地址，在web应用部署的服务器是否可以访问。
+答：检查`SSOConfig.getTokenEndpointUrl()`返回的地址，在web应用部署的服务器是否可以访问。
+
 ----
 
 **问：配置好单点登录后，登录时抛出`HTTP Status 500 - parse json error`**
 
-答：
-* 检查`SSOConfig.getTokenEndpointUrl()`返回的地址是否正确，如果返回的结果是html代码，很有可能是这个地址配错了。
-* 检查`SSOConfig.getTokenEndpointUrl()`这个地址的返回结果是否正确。
+答：检查`SSOConfig.getTokenEndpointUrl()`的返回值：
+* 是否正确，如果json是一串html代码，很有可能是这个地址配错了。
+* 返回结果是否正确的json。
 
 ----
 
 **问：配置好单点注销之后，为什么没有跳转到SSO注销？**
 
-答：
-* 检查配置的SSO注销地址，默认是以`/oauth2_logout`结尾的地址
-* 检查配置的SSO注销地址是否被其他拦截器拦截
+答：检查配置的SSO注销地址:
+* 是否以`/oauth2_logout`结尾的地址
+* 是否被其他拦截器拦截
 
 ----
 
