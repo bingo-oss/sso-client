@@ -451,6 +451,43 @@ public class SSOClientTest {
         }
         Assert.assertTrue(invalid);
         
+        // 取到的access token已经是过期的了
+        jwt = jwtBuilder.signWith(SignatureAlgorithm.RS256, keyPair.getPrivate())
+                .setExpiration(new Date(System.currentTimeMillis()+1000*60)).compact();
+        removeStub(mb);
+        resp.put("expires_in","0");
+        mb.willReturn(aResponse().withStatus(200).withBody(JSON.encode(resp)));
+        stubFor(mb);
+        expires = false;
+        try {
+            client.obtainAccessTokenByClientCredentialsWithToken(jwt);
+        } catch (InvalidTokenException e) {
+            e.printStackTrace();
+        } catch (TokenExpiredException e) {
+            expires = true;
+        }
+        Assert.assertTrue(expires);
+        
+        
+        // json 解析失败
+        removeStub(mb);
+        mb.willReturn(aResponse().withStatus(200).withBody("error_json"));
+        stubFor(mb);
+        boolean errorJson = false;
+        String errorMsg = null;
+        try {
+            client.obtainAccessTokenByClientCredentialsWithToken(jwt);
+        } catch (InvalidTokenException e) {
+            e.printStackTrace();
+        } catch (TokenExpiredException e) {
+            e.printStackTrace();
+        } catch (Exception e){
+            errorJson = true;
+            errorMsg = e.getMessage();
+        }
+        Assert.assertTrue(errorJson);
+        Assert.assertTrue(errorMsg.contains("parse json error"));
+
         // 暂时不支持bearer token
         boolean unsupport = false;
         try {
@@ -493,14 +530,15 @@ public class SSOClientTest {
         Assert.assertTrue(authc != authc1);
 
         // idToken验证失败
+        boolean invalid = false;
         try {
             client.verifyIdToken("aa"+idToken.substring(2));
         } catch (InvalidTokenException e) {
-            e.printStackTrace();
+            invalid = true;
         } catch (TokenExpiredException e) {
             e.printStackTrace();
         }
-
+        Assert.assertTrue(invalid);
 
         // idToken过期
         builder.setExpiration(new Date(System.currentTimeMillis()-5*60*1000));
@@ -516,7 +554,7 @@ public class SSOClientTest {
         Assert.assertTrue(expired);
         
         // idToken无效
-        boolean invalid = false;
+        invalid = false;
         try {
             client.verifyIdToken("error.idtoken");
         } catch (InvalidTokenException e) {

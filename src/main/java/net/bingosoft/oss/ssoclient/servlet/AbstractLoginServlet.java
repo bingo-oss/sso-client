@@ -40,6 +40,11 @@ public abstract class AbstractLoginServlet extends HttpServlet{
         }
     }
 
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        doGet(req,resp);
+    }
+
     protected void redirectToSSOLogin(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String redirectUri = buildRedirectUri(req,resp);
         String loginUrl = buildLoginUrl(req,resp,redirectUri);
