@@ -31,9 +31,31 @@ public interface TokenProvider {
     Authentication verifyBearerAccessToken(String accessToken);
 
     /**
-     * 通过授权码获取AccessToken
+     * 通过授权码获取access token
      * 
      * @since 3.0.1
      */
     AccessToken obtainAccessTokenByAuthzCode(String authzCode) throws InvalidCodeException,TokenExpiredException;
+
+    /**
+     * 
+     * 通过<code>clientId</code>和<code>ClientSecret</code>获取access token
+     * 
+     * @since 3.0.1
+     */
+    AccessToken obtainAccessTokenByClientCredentials();
+
+    /**
+     * 通过<code>clientId</code>和<code>ClientSecret</code>加上jwt access token获取access token
+     * 
+     * @since 3.0.1
+     */
+    AccessToken obtainAccessTokenByClientCredentialsWithJwtToken(String accessToken) throws InvalidTokenException, TokenExpiredException;
+    
+    /**
+     * 通过<code>clientId</code>和<code>ClientSecret</code>加上bearer access token获取access token
+     *
+     * @since 3.0.1
+     */
+    AccessToken obtainAccessTokenByClientCredentialsWithBearerToken(String accessToken) throws InvalidTokenException, TokenExpiredException;
 }

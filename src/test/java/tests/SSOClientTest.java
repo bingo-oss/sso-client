@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -169,10 +170,18 @@ public class SSOClientTest {
             unsupported = true;
         }
         Assert.assertTrue(unsupported);
+        // Bearer类型的at校验
+        unsupported = false;
+        try {
+            client.obtainAccessTokenByClientCredentialsWithToken(UUID.randomUUID().toString());
+        }catch (UnsupportedOperationException e){
+            unsupported = true;
+        }
+        Assert.assertTrue(unsupported);
     }
     
     @Test
-    public void testObtainAccessToken(){
+    public void testObtainAccessTokenByCode(){
         Map<String, String> params = new HashMap<String, String>();
         params.put("grant_type","authorization_code");
         params.put("code",authCode);
@@ -196,7 +205,7 @@ public class SSOClientTest {
         removeStub(mb);
         mb = post("/oauth2/token").withPostServeAction("postParams",params)
                 .withHeader("Authorization", equalTo(basicHeader))
-                .willReturn(aResponse().withStatus(400).withBody("invalid code"));
+                .willReturn(aResponse().withStatus(400).withBody("{\"error\":\"invalid_grant\",\"error_description\":\"invalid code\"}"));
         stubFor(mb);
         boolean invalid = false;
         String msg = null;
@@ -209,6 +218,7 @@ public class SSOClientTest {
             e.printStackTrace();
         }
         Assert.assertTrue(invalid);
+        Assert.assertTrue(msg.contains("invalid_grant"));
         Assert.assertTrue(msg.contains("invalid code"));
         
         // 返回结果中没有access token 
@@ -271,6 +281,191 @@ public class SSOClientTest {
             runtimeException = true;
         }
         Assert.assertTrue(runtimeException);
+        removeStub(mb);
+    }
+    
+    @Test
+    public void testObtainAccessTokenByClientCredentials(){
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("grant_type","client_credentials");
+
+        Map<String, String> resp = new HashMap<String, String>();
+        resp.put("access_token","accesstoken");
+        resp.put("refresh_token","refreshtoken");
+        resp.put("expires_in","3600");
+        resp.put("token_type","Bearer");
+
+        Map<String, String> error = new HashMap<String, String>();
+        error.put("error","invalid_grant");
+        error.put("error_description","client_secret invalid");
+        
+        // 正常获取
+        MappingBuilder mb = post("/oauth2/token").withPostServeAction("postParams",params)
+                .withHeader("Authorization", equalTo(basicHeader))
+                .willReturn(aResponse().withStatus(200).withBody(JSON.encode(resp)));
+        stubFor(mb);
+        AccessToken accessToken = client.obtainAccessTokenByClientCredentials();
+        assertAccessToken(accessToken);
+        
+        // 缓存
+        AccessToken accessToken1 = client.obtainAccessTokenByClientCredentials();
+        Assert.assertTrue(accessToken==accessToken1);
+        
+        // 缓存过期
+        accessToken.setExpires(10);
+        accessToken1 = client.obtainAccessTokenByClientCredentials();
+        Assert.assertTrue(accessToken!=accessToken1);
+        
+        removeStub(mb);
+        
+        // client credentials校验错误
+        client.getCacheProvider().remove("obtainAccessTokenByClientCredentials:"+client.getConfig().getClientId());
+        mb.willReturn(aResponse().withStatus(401).withBody(JSON.encode(error)));
+        stubFor(mb);
+        boolean invalidGrant = false;
+        String errorMsg = null;
+        try {
+            client.obtainAccessTokenByClientCredentials();
+        } catch (Exception e) {
+            invalidGrant = true;
+            errorMsg = e.getMessage();
+        }
+        Assert.assertTrue(invalidGrant);
+        Assert.assertTrue(errorMsg.contains("invalid_grant"));
+        removeStub(mb);
+        
+        // 服务端异常
+        mb.willReturn(aResponse().withStatus(500).withBody(JSON.encode("{error:\"server_error\",error_description:\"server error\"}")));
+        stubFor(mb);
+        boolean serverError = false;
+        try {
+            client.obtainAccessTokenByClientCredentials();
+        } catch (Exception e) {
+            serverError = true;
+        }
+        Assert.assertTrue(serverError);
+        removeStub(mb);
+        // json解析异常
+        
+        mb.willReturn(aResponse().withStatus(200).withBody(JSON.encode("{aaa}{bbb}")));
+        stubFor(mb);
+        boolean jsonError = false;
+        errorMsg = null;
+        try {
+            client.obtainAccessTokenByClientCredentials();
+        } catch (Exception e) {
+            jsonError = true;
+            errorMsg = e.getMessage();
+        }
+        Assert.assertTrue(jsonError);
+        Assert.assertTrue(errorMsg.contains("parse json error"));
+        removeStub(mb);
+        // access token的json异常
+        error.put("error","server_error");
+        error.put("error_description","server error");
+        mb.willReturn(aResponse().withStatus(200).withBody(JSON.encode(error)));
+        stubFor(mb);
+        boolean errorAccessTokenJson = false;
+        errorMsg = null;
+        try {
+            client.obtainAccessTokenByClientCredentials();
+        } catch (Exception e) {
+            errorAccessTokenJson = true;
+            errorMsg = e.getMessage();
+        }
+        Assert.assertTrue(errorAccessTokenJson);
+        Assert.assertTrue(errorMsg.contains("server_error"));
+        removeStub(mb);
+        
+        // 取到at的时候就已经过期了
+        resp.put("expires_in","0");
+        mb.willReturn(aResponse().withStatus(200).withBody(JSON.encode(resp)));
+        stubFor(mb);
+        boolean expires = false;
+        try {
+            client.obtainAccessTokenByClientCredentials();
+        } catch (TokenExpiredException e) {
+            expires = true;
+        }
+        Assert.assertTrue(expires);
+
+    }
+    
+    @Test
+    public void testObtainAccessTokenByClientCredentialsWithToken(){
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("grant_type","jwt_client_credentials");
+
+        Map<String, String> resp = new HashMap<String, String>();
+        resp.put("access_token","accesstoken");
+        resp.put("refresh_token","refreshtoken");
+        resp.put("expires_in","3600");
+        resp.put("token_type","Bearer");
+
+        Map<String, String> error = new HashMap<String, String>();
+        error.put("error","invalid_grant");
+        error.put("error_description","client_secret invalid");
+        
+        JwtBuilder jwtBuilder = jwtBuilder(System.currentTimeMillis()+1000*600)
+                .signWith(SignatureAlgorithm.RS256,keyPair.getPrivate());
+        String jwt = jwtBuilder.compact();
+        params.put("jwt_token",jwt);
+        
+        // 正常获取
+        MappingBuilder mb = post("/oauth2/token").withPostServeAction("postParams",params)
+                .withHeader("Authorization", equalTo(basicHeader))
+                .willReturn(aResponse().withStatus(200).withBody(JSON.encode(resp)));
+        stubFor(mb);
+        AccessToken accessToken = client.obtainAccessTokenByClientCredentialsWithToken(jwt);
+        assertAccessToken(accessToken);
+        // 缓存
+        AccessToken accessToken1 = client.obtainAccessTokenByClientCredentialsWithToken(jwt);
+        Assert.assertTrue(accessToken==accessToken1);
+        // 缓存过期
+        accessToken.setExpires(10);
+        accessToken1 = client.obtainAccessTokenByClientCredentialsWithToken(jwt);
+        Assert.assertTrue(accessToken!=accessToken1);
+        
+        // jwt过期
+        jwt = jwtBuilder.setExpiration(new Date(System.currentTimeMillis()-1000*60)).compact();
+        boolean expires = false;
+        try {
+            client.obtainAccessTokenByClientCredentialsWithToken(jwt);
+        } catch (InvalidTokenException e) {
+            e.printStackTrace();
+        } catch (TokenExpiredException e) {
+            expires = true;
+        }
+        Assert.assertTrue(expires);
+
+        // jwt无效
+        jwt = jwtBuilder.signWith(SignatureAlgorithm.RS256, RsaProvider.generateKeyPair().getPrivate())
+                .setExpiration(new Date(System.currentTimeMillis()+1000*600)).compact();
+        boolean invalid = false;
+        try {
+            client.obtainAccessTokenByClientCredentialsWithToken(jwt);
+        } catch (InvalidTokenException e) {
+            invalid = true;
+        } catch (TokenExpiredException e) {
+            e.printStackTrace();
+        }
+        Assert.assertTrue(invalid);
+        
+        // 暂时不支持bearer token
+        boolean unsupport = false;
+        try {
+            client.obtainAccessTokenByClientCredentialsWithToken(UUID.randomUUID().toString());
+        } catch (InvalidTokenException e) {
+            e.printStackTrace();
+        } catch (TokenExpiredException e) {
+            e.printStackTrace();
+        } catch (UnsupportedOperationException e){
+            unsupport = true;
+        }
+        Assert.assertTrue(unsupport);
+        
+        
+        
     }
     
     @Test
@@ -289,6 +484,24 @@ public class SSOClientTest {
         Authentication authc = client.verifyIdToken(idToken);
         assertAuthc(authc);
         
+        // 缓存
+        Authentication authc1 = client.verifyIdToken(idToken);
+        Assert.assertTrue(authc == authc1);
+        // 缓存失效
+        authc.setExpires(10);
+        authc1 = client.verifyIdToken(idToken);
+        Assert.assertTrue(authc != authc1);
+
+        // idToken验证失败
+        try {
+            client.verifyIdToken("aa"+idToken.substring(2));
+        } catch (InvalidTokenException e) {
+            e.printStackTrace();
+        } catch (TokenExpiredException e) {
+            e.printStackTrace();
+        }
+
+
         // idToken过期
         builder.setExpiration(new Date(System.currentTimeMillis()-5*60*1000));
         idToken = builder.compact();
@@ -312,7 +525,16 @@ public class SSOClientTest {
             e.printStackTrace();
         }
         Assert.assertTrue(invalid);
-        
+        // idToken不是jwtToken
+        invalid = false;
+        try {
+            client.verifyIdToken(UUID.randomUUID().toString());
+        } catch (InvalidTokenException e) {
+            invalid = true;
+        } catch (TokenExpiredException e) {
+            e.printStackTrace();
+        }
+        Assert.assertTrue(invalid);
     }
     
     protected void assertAuthc(Authentication authc){
@@ -395,6 +617,25 @@ public class SSOClientTest {
                 used.put("obtainAccessTokenByAuthzCode",true);
                 return new AccessToken();
             }
+
+            @Override
+            public AccessToken obtainAccessTokenByClientCredentials() {
+                used.put("obtainAccessTokenByClientCredentials",true);
+                return new AccessToken();
+            }
+
+            @Override
+            public AccessToken obtainAccessTokenByClientCredentialsWithJwtToken(
+                    String accessToken) throws InvalidTokenException, TokenExpiredException {
+                used.put("obtainAccessTokenByClientCredentialsWithJwtToken",true);
+                return new AccessToken();
+            }
+            @Override
+            public AccessToken obtainAccessTokenByClientCredentialsWithBearerToken(
+                    String accessToken) throws InvalidTokenException, TokenExpiredException {
+                used.put("obtainAccessTokenByClientCredentialsWithBearerToken",true);
+                return new AccessToken();
+            }
         };
         client.setTokenProvider(provider);
         Assert.assertTrue(provider == client.getTokenProvider());
@@ -402,10 +643,16 @@ public class SSOClientTest {
         client.verifyAccessToken(UUID.randomUUID().toString());
         client.verifyIdToken(jwtToken);
         client.obtainAccessTokenByCode(authCode);
+        client.obtainAccessTokenByClientCredentials();
+        client.obtainAccessTokenByClientCredentialsWithToken(jwtToken);
+        client.obtainAccessTokenByClientCredentialsWithToken(UUID.randomUUID().toString());
         Assert.assertTrue(used.get("verifyJwtAccessToken"));
         Assert.assertTrue(used.get("verifyBearerAccessToken"));
         Assert.assertTrue(used.get("verifyIdToken"));
         Assert.assertTrue(used.get("obtainAccessTokenByAuthzCode"));
+        Assert.assertTrue(used.get("obtainAccessTokenByClientCredentials"));
+        Assert.assertTrue(used.get("obtainAccessTokenByClientCredentialsWithJwtToken"));
+        Assert.assertTrue(used.get("obtainAccessTokenByClientCredentialsWithBearerToken"));
     }
     
     protected JwtBuilder jwtBuilder(long exp, Map<String, Object> ext){

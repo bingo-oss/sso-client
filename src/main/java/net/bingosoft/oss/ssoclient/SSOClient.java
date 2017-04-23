@@ -96,7 +96,7 @@ public class SSOClient {
                 cp.remove(idToken);
             }
         }
-
+        
         //check is jwt token?
         boolean jwt = checkJwtToken(idToken);
         if(jwt) {
@@ -111,7 +111,9 @@ public class SSOClient {
     }
 
     /**
-     * 验证登录后获取到的授权码并返回访问令牌信息
+     * 验证登录后获取到的授权码并返回access token。 
+     * 
+     * 返回代表用户和应用的access token，这里的用户和应用由<code>authorizationCode</code>决定
      *
      * @throws InvalidTokenException
      * @throws TokenExpiredException
@@ -119,6 +121,70 @@ public class SSOClient {
     public AccessToken obtainAccessTokenByCode(String authorizationCode) throws InvalidCodeException, TokenExpiredException {
         AccessToken token = tp().obtainAccessTokenByAuthzCode(authorizationCode);
         return token;
+    }
+
+    /**
+     * 使用<code>client_id</code>和<code>client_secret</code>通过<code>grant_type=client_credentials</code>的方式
+     * 获取access token。
+     * 
+     * 返回SSO颁发给当前应用的access token，代表当前应用的身份。
+     * 
+     * @see <a href="http://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication">ClientAuthentication</a>
+     * 
+     * @since 3.0.1
+     */
+    public AccessToken obtainAccessTokenByClientCredentials() throws TokenExpiredException{
+        String key = "obtainAccessTokenByClientCredentials:"+config.getClientId();
+        AccessToken accessToken = getAccessTokenFromCache(key);
+        if (accessToken != null){
+            return accessToken;
+        }
+        
+        accessToken = tp().obtainAccessTokenByClientCredentials();
+        cp().put(key,accessToken,accessToken.getExpires());
+        return accessToken;
+    }
+
+    /**
+     * 使用<code>client_id</code>和<code>client_secret</code>加上用户的access token获取一个新的access token，
+     * 
+     * 新的access token是SSO颁发给用户和当前应用的，这里的用户由<code>accessToken</code>决定
+     * 
+     * 返回代表用户和当前应用的身份的access token。
+     * 
+     * @throws InvalidTokenException 如果传入的accessToken是无效的
+     * @throws TokenExpiredException 如果传入的accessToken已经过期
+     * 
+     * @since 3.0.1
+     */
+    public AccessToken obtainAccessTokenByClientCredentialsWithToken(String accessToken) throws InvalidTokenException, TokenExpiredException{
+        String key = "obtainAccessTokenByClientCredentialsWithToken:"+accessToken;
+        AccessToken token = getAccessTokenFromCache(key);
+        if (token != null){
+            return token;
+        }
+        
+        boolean isJwt = checkJwtToken(accessToken);
+        if(isJwt){
+            token = tp().obtainAccessTokenByClientCredentialsWithJwtToken(accessToken);
+        }else {
+            token = tp().obtainAccessTokenByClientCredentialsWithBearerToken(accessToken);
+        }
+        cp().put(key,token,token.getExpires());
+        return token;
+    }
+
+    protected AccessToken getAccessTokenFromCache(String key){
+        CacheProvider cp = cp();
+        AccessToken token = cp.get(key);
+        if(token != null){
+            if(!token.isExpired()){
+                return token;
+            }else {
+                cp.remove(key);
+            }
+        }
+        return null;
     }
     
     protected boolean checkJwtToken(String accessToken) {
