@@ -30,8 +30,6 @@ import net.bingosoft.oss.ssoclient.internal.Strings;
 import net.bingosoft.oss.ssoclient.model.AccessToken;
 import net.bingosoft.oss.ssoclient.model.Authentication;
 
-import java.net.ConnectException;
-import java.net.HttpURLConnection;
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
@@ -78,12 +76,14 @@ public class TokenProviderImpl implements TokenProvider {
             throw new InvalidTokenException("Incorrect token : " + idToken);
         }
         //验证通过
-        Authentication authentication = createAuthcFromMap(map);
+        Authentication authentication = createAuthcFromIdTokenMap(map);
         if(authentication.isExpired()){
             throw new TokenExpiredException(idToken);
         }
         return authentication;
     }
+
+    
 
     @Override
     public Authentication verifyBearerAccessToken(String accessToken) {
@@ -220,6 +220,21 @@ public class TokenProviderImpl implements TokenProvider {
         authentication.setUserId((String)map.remove("user_id"));
         authentication.setUsername((String)map.remove("username"));
         authentication.setClientId((String)map.remove("client_id"));
+        authentication.setScope((String)map.remove("scope"));
+
+        String expires = Strings.nullOrToString(map.remove("exp"));
+        authentication.setExpires(expires == null ? 0 : Long.parseLong(expires));
+        for (Entry<String, Object> entry : map.entrySet()){
+            authentication.setAttribute(entry.getKey(),entry.getValue());
+        }
+        return authentication;
+    }
+
+    protected Authentication createAuthcFromIdTokenMap(Map<String, Object> map) {
+        Authentication authentication = new Authentication();
+        authentication.setUserId((String)map.remove("sub"));
+        authentication.setUsername((String)map.remove("login_name"));
+        authentication.setClientId((String)map.remove("aud"));
         authentication.setScope((String)map.remove("scope"));
 
         String expires = Strings.nullOrToString(map.remove("exp"));

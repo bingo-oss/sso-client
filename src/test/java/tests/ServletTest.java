@@ -100,10 +100,9 @@ public class ServletTest {
         
         // 从SSO重定向回来
         String idToken = Jwts.builder().signWith(SignatureAlgorithm.HS256, Base64.urlEncode("clientSecret"))
-                .claim("user_id","43FE6476-CD7B-493B-8044-C7E3149D0876")
-                .claim("scope","perm")
-                .claim("client_id","clientId")
-                .claim("username","admin")
+                .claim("sub","43FE6476-CD7B-493B-8044-C7E3149D0876")
+                .claim("aud","clientId")
+                .claim("login_name","admin")
                 .setExpiration(new Date(System.currentTimeMillis()+1000*60))
                 .compact();
         request = new GetMethodWebRequest(LOCAL_HOST+"/ssoclient/login");

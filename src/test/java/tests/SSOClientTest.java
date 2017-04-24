@@ -507,19 +507,24 @@ public class SSOClientTest {
     
     @Test
     public void testVerifyIdToken(){
-        JwtBuilder builder = jwtBuilder(System.currentTimeMillis()+5*60*1000);
+        JwtBuilder builder = Jwts.builder()
+                .claim("sub","43FE6476-CD7B-493B-8044-C7E3149D0876")
+                .claim("aud","console")
+                .claim("login_name","admin")
+                .claim("name","管理员")
+                .setExpiration(new Date(System.currentTimeMillis()+5*60*1000));
         builder.signWith(SignatureAlgorithm.HS256, client.getConfig().getClientSecret().getBytes());
         String idToken = builder.compact();
         
         // Jwts自校验
         String userId = Jwts.parser().setSigningKey(client.getConfig().getClientSecret().getBytes())
-                .parseClaimsJws(idToken).getBody().get("user_id").toString();
+                .parseClaimsJws(idToken).getBody().get("sub").toString();
         Assert.assertEquals("43FE6476-CD7B-493B-8044-C7E3149D0876",userId);
 
 
         // 正常校验通过
         Authentication authc = client.verifyIdToken(idToken);
-        assertAuthc(authc);
+        assertIdTokenAuthc(authc);
         
         // 缓存
         Authentication authc1 = client.verifyIdToken(idToken);
@@ -579,6 +584,12 @@ public class SSOClientTest {
         Assert.assertEquals("43FE6476-CD7B-493B-8044-C7E3149D0876", authc.getUserId());
         Assert.assertEquals("admin", authc.getUsername());
         Assert.assertEquals("perm", authc.getScope());
+        Assert.assertEquals("console", authc.getClientId());
+    }
+
+    protected void assertIdTokenAuthc(Authentication authc){
+        Assert.assertEquals("43FE6476-CD7B-493B-8044-C7E3149D0876", authc.getUserId());
+        Assert.assertEquals("admin", authc.getUsername());
         Assert.assertEquals("console", authc.getClientId());
     }
     
