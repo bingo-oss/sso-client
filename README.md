@@ -212,19 +212,65 @@ web应用登陆后，只要访问`${contextPath}/oauth2_logout`即可完成单�
 
 ### 4. 获取访问令牌 (Obtain Access Token)
 
-todo : 简要描述获取访问令牌的适用场景
+访问令牌(access token)是用来代表请求发起者的身份的，一般来说访问令牌有三种可能：
 
-#### 4.1 通过授权码获取新的访问令牌
+* **仅代表用户身份**：用于调用只需要验证用户身份的服务
+* **仅代表应用身份**：用于调用只需要验证应用身份的服务 
+* **同时代表用户和应用的身份**：用于调用同时需要验证用户身份和应用身份的服务，也可以用于前面两种情况
 
-todo
+访问令牌一般有四个属性：
 
-#### 4.2 通过已有的访问令牌获取新的访问令牌
+```java
+AccessToken token = new AccessToken();
+// 访问令牌，真正代表用户和应用身份的令牌
+String accessToken = token.getAccessToken();
+// 刷新令牌，当这个访问令牌过期后，可以用刷新令牌换取新的访问令牌
+String refreshToken = token.getRefreshToken();
+// 令牌类型，一般是"Bearer"
+String tokenType = token.getTokenType();
+// 过期时间，指的是距离标准日期1970-01-01T00:00:00Z UTC的秒数
+long expires = token.getExpires();
+```
 
-todo 
+访问令牌的获取有如下几种方式。
 
-#### 4.3 通过id_token获取新的访问令牌
+#### 4.1 通过授权码(Authorization Code)获取新的访问令牌
 
-todo
+授权码的获取可以参考[OpenId Connect CodeFlowSteps](http://openid.net/specs/openid-connect-core-1_0.html#CodeFlowSteps)。
+获取到授权码`code`后，可以利用`code`获取访问令牌：
+
+```java
+AccessToken token = client.obtainAccessTokenByCode(code);
+```
+
+这个令牌代表的身份由授权码决定，一般是代表用户身份和生成这个`code`的应用身份。
+
+> 注：这里使用client对象验证授权码生成访问令牌，因此访问令牌代表的是client的身份和用户身份。
+
+#### 4.2 通过应用凭证(client credentials)获取访问令牌
+
+当我们的服务需要调用另一个服务的时候，如果被调用的服务需要并且只需要确认我们的应用身份，这个时候可以使用仅代表client身份的访问令牌：
+
+```java
+AccessToken token = client.obtainAccessTokenByClientCredentials();
+```
+
+这里使用client自己的访问凭证获取访问令牌，这个令牌只能代表client自己的身份。
+
+#### 4.3 通过已有的访问令牌获取新的访问令牌
+
+当我们的服务需要调用另一个服务，并且被调用的服务需要同时验证用户身份和应用身份的时候，这个时候我们需要一个能代表用户身份和client身份的访问令牌。
+
+在我们的服务接收请求的时候，已经获取到一个代表用户身份的访问令牌。
+
+```java
+// HttpServletRequest req;
+String accessToken = SSOUtils.extractAccessToken(req);
+AccessToken clientAndUser = client.obtainAccessTokenByClientCredentialsWithToken(accessToken);
+```
+
+这里`accessToken`代表的是用户身份，`clientAndUser`代表的是用户身份和client的身份。
+使用`clientAndUser`这个访问令牌就可以调用另一个服务了。
 
 ## 扩展
 
