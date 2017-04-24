@@ -249,7 +249,7 @@ AccessToken token = client.obtainAccessTokenByCode(code);
 
 #### 4.2 通过应用凭证(client credentials)获取访问令牌
 
-当我们的服务需要调用另一个服务的时候，如果被调用的服务需要并且只需要确认我们的应用身份，这个时候可以使用仅代表client身份的访问令牌：
+当我们的服务需要调用另一个服务的时候，如果被调用的服务需要并且**只需要确认client身份**，这个时候可以使用仅代表client身份的访问令牌：
 
 ```java
 AccessToken token = client.obtainAccessTokenByClientCredentials();
@@ -259,7 +259,7 @@ AccessToken token = client.obtainAccessTokenByClientCredentials();
 
 #### 4.3 通过已有的访问令牌获取新的访问令牌
 
-当我们的服务需要调用另一个服务，并且被调用的服务需要同时验证用户身份和应用身份的时候，这个时候我们需要一个能代表用户身份和client身份的访问令牌。
+当我们的服务需要调用另一个服务，并且被调用的服务**需要同时验证用户身份和client身份**的时候，这个时候我们需要一个能代表用户身份和client身份的访问令牌。
 
 在我们的服务接收请求的时候，已经获取到一个代表用户身份的访问令牌。
 
