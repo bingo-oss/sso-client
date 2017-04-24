@@ -14,6 +14,7 @@ import net.bingosoft.oss.ssoclient.exception.InvalidTokenException;
 import net.bingosoft.oss.ssoclient.exception.TokenExpiredException;
 import net.bingosoft.oss.ssoclient.internal.Base64;
 import net.bingosoft.oss.ssoclient.internal.JSON;
+import net.bingosoft.oss.ssoclient.internal.Urls;
 import net.bingosoft.oss.ssoclient.model.AccessToken;
 import net.bingosoft.oss.ssoclient.model.Authentication;
 import net.bingosoft.oss.ssoclient.spi.CacheProvider;
@@ -26,7 +27,6 @@ import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -98,7 +98,7 @@ public class SSOClientTest {
     }
     
     @Test
-    public void testVerifyAccessToken() throws InterruptedException, UnsupportedEncodingException {
+    public void testVerifyJwtAccessToken() throws InterruptedException, UnsupportedEncodingException {
         
         // 正确校验
         Authentication authc = client.verifyAccessToken(jwtToken);
@@ -159,19 +159,74 @@ public class SSOClientTest {
         }
         Assert.assertTrue(expiredToken);
     }
+    @Test
+    public void testVerifyBearerAccessToken(){
+
+        String accessToken = UUID.randomUUID().toString();
+
+        Map<String, String> resp = new HashMap<String, String>();
+        resp.put("user_id","43FE6476-CD7B-493B-8044-C7E3149D0876");
+        resp.put("username","admin");
+        resp.put("expires_in","3600");
+        resp.put("client_id","console");
+        resp.put("scope","perm");
+        
+        MappingBuilder mb = get("/oauth2/tokeninfo?access_token="+accessToken)
+                .willReturn(aResponse().withStatus(200).withBody(JSON.encode(resp)));
+        stubFor(mb);
+        // 正常返回
+        Authentication authc = client.verifyAccessToken(accessToken);
+        assertAuthc(authc);
+        //缓存
+        Authentication authc1 = client.verifyAccessToken(accessToken);
+        Assert.assertTrue(authc == authc1);
+        // 缓存失效
+        authc.setExpires(10);
+        authc1 = client.verifyAccessToken(accessToken);
+        Assert.assertTrue(authc != authc1);
+        
+        // access token 无效
+        removeStub(mb);
+        Map<String, String> error = new HashMap<String, String>();
+        error.put("error","invalid_token");
+        error.put("error_description","无效的token");
+        mb = get("/oauth2/tokeninfo?access_token="+accessToken)
+                .willReturn(aResponse().withStatus(400).withBody(JSON.encode(error)));
+        stubFor(mb);
+        boolean invalid = false;
+        authc1.setExpires(10);
+        try {
+            client.verifyAccessToken(accessToken);
+        } catch (InvalidTokenException e) {
+            invalid = true;
+        } catch (TokenExpiredException e) {
+            e.printStackTrace();
+        }
+        Assert.assertTrue(invalid);
+
+        // access token过期
+        resp.remove("expires_in");
+        removeStub(mb);
+        mb = get("/oauth2/tokeninfo?access_token="+accessToken)
+                .willReturn(aResponse().withStatus(400).withBody(JSON.encode(resp)));
+        stubFor(mb);
+        boolean expires = false;
+        authc1.setExpires(10);
+        try {
+            client.verifyAccessToken(accessToken);
+        } catch (InvalidTokenException e) {
+            e.printStackTrace();
+        } catch (TokenExpiredException e) {
+            expires = true;
+        }
+        Assert.assertTrue(expires);
+        removeStub(mb);
+    }
     
     @Test
     public void testUnsupportedOperation(){
         // Bearer类型的at校验
         boolean unsupported = false;
-        try {
-            client.verifyAccessToken(UUID.randomUUID().toString());
-        }catch (UnsupportedOperationException e){
-            unsupported = true;
-        }
-        Assert.assertTrue(unsupported);
-        // Bearer类型的at校验
-        unsupported = false;
         try {
             client.obtainAccessTokenByClientCredentialsWithToken(UUID.randomUUID().toString());
         }catch (UnsupportedOperationException e){
@@ -185,7 +240,7 @@ public class SSOClientTest {
         Map<String, String> params = new HashMap<String, String>();
         params.put("grant_type","authorization_code");
         params.put("code",authCode);
-        params.put("redirectUri", Base64.urlEncode(client.getConfig().getRedirectUri()));
+        params.put("redirectUri", Urls.encode(client.getConfig().getRedirectUri()));
         
         Map<String, String> resp = new HashMap<String, String>();
         resp.put("access_token","accesstoken");

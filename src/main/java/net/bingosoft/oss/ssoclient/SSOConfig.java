@@ -26,9 +26,10 @@ public class SSOConfig {
     protected String redirectUri;
     protected String publicKeyEndpointUrl;
     protected String tokenEndpointUrl;
+    protected String tokenInfoEndpointUrl;
     protected String authorizationEndpointUrl;
     protected String oauthLogoutEndpoint;
-
+    
     //todo :
 
     public SSOConfig() {
@@ -77,7 +78,9 @@ public class SSOConfig {
     public String getRedirectUri() {
         return redirectUri;
     }
-
+    /**
+     * @since 3.0.1
+     */
     public void setRedirectUri(String redirectUri) {
         this.redirectUri = redirectUri;
     }
@@ -101,9 +104,26 @@ public class SSOConfig {
     public String getTokenEndpointUrl() {
         return tokenEndpointUrl;
     }
-
+    /**
+     * @since 3.0.1
+     */
     public void setTokenEndpointUrl(String tokenEndpointUrl) {
         this.tokenEndpointUrl = tokenEndpointUrl;
+    }
+
+    /**
+     * 返回获取token信息的url
+     * 
+     * @since 3.0.1
+     */
+    public String getTokenInfoEndpointUrl() {
+        return tokenInfoEndpointUrl;
+    }
+    /**
+     * @since 3.0.1
+     */
+    public void setTokenInfoEndpointUrl(String tokenInfoEndpointUrl) {
+        this.tokenInfoEndpointUrl = tokenInfoEndpointUrl;
     }
 
     /**
@@ -114,6 +134,9 @@ public class SSOConfig {
     public String getAuthorizationEndpointUrl() {
         return authorizationEndpointUrl;
     }
+    /**
+     * @since 3.0.1
+     */
     public void setAuthorizationEndpointUrl(String authorizationEndpointUrl) {
         this.authorizationEndpointUrl = authorizationEndpointUrl;
     }
@@ -126,7 +149,9 @@ public class SSOConfig {
     public String getOauthLogoutEndpoint() {
         return oauthLogoutEndpoint;
     }
-
+    /**
+     * @since 3.0.1
+     */
     public void setOauthLogoutEndpoint(String oauthLogoutEndpoint) {
         this.oauthLogoutEndpoint = oauthLogoutEndpoint;
     }
@@ -153,6 +178,7 @@ public class SSOConfig {
         this.setTokenEndpointUrl(baseUrl + "/oauth2/token");
         this.setAuthorizationEndpointUrl(baseUrl + "/oauth2/authorize");
         this.setOauthLogoutEndpoint(baseUrl + "/oauth2/logout");
+        this.setTokenInfoEndpointUrl(baseUrl + "/oauth2/tokeninfo");
         return this;
     }
     

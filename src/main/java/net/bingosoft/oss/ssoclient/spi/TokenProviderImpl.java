@@ -27,6 +27,7 @@ import net.bingosoft.oss.ssoclient.internal.HttpClient;
 import net.bingosoft.oss.ssoclient.internal.JSON;
 import net.bingosoft.oss.ssoclient.internal.JWT;
 import net.bingosoft.oss.ssoclient.internal.Strings;
+import net.bingosoft.oss.ssoclient.internal.Urls;
 import net.bingosoft.oss.ssoclient.model.AccessToken;
 import net.bingosoft.oss.ssoclient.model.Authentication;
 
@@ -86,8 +87,32 @@ public class TokenProviderImpl implements TokenProvider {
     
 
     @Override
-    public Authentication verifyBearerAccessToken(String accessToken) {
-        throw new UnsupportedOperationException("Not implemented");
+    public Authentication verifyBearerAccessToken(String accessToken) throws InvalidTokenException, TokenExpiredException {
+        String tokeninfoUrl = Urls.appendQueryString(config.getTokenInfoEndpointUrl(),"access_token",accessToken);
+        String json = HttpClient.get(tokeninfoUrl);
+        
+        Map<String, Object> tokenInfoMap = JSON.decodeToMap(json);        
+        
+        if(tokenInfoMap.containsKey("error")){
+            throw new InvalidTokenException(tokenInfoMap.get("error")+":"+tokenInfoMap.get("error_description"));
+        }
+        
+        Authentication authc = new Authentication();
+        authc.setUserId((String) tokenInfoMap.remove("user_id"));
+        authc.setClientId((String)tokenInfoMap.remove("client_id"));
+        authc.setUsername((String)tokenInfoMap.remove("username"));
+        authc.setScope((String)tokenInfoMap.remove("scope"));
+        String expiresIn = Strings.nullOrToString(tokenInfoMap.remove("expires_in"));
+        if(null == expiresIn){
+            expiresIn = "0";
+        }
+        authc.setExpires(System.currentTimeMillis()/1000L+Integer.parseInt(expiresIn));
+        
+        if(authc.isExpired()){
+            throw new TokenExpiredException("token is expired:"+accessToken);
+        }
+        
+        return authc;
     }
     
     @Override
@@ -188,7 +213,7 @@ public class TokenProviderImpl implements TokenProvider {
     public AccessToken obtainAccessTokenByClientCredentialsWithBearerToken(
             String accessToken) throws InvalidTokenException, TokenExpiredException {
         // TODO:
-        throw new UnsupportedOperationException("not implement!");
+        throw new UnsupportedOperationException("not implement");
     }
 
     protected Map<String,Object> retryVerify(String accessToken) {

@@ -1,7 +1,9 @@
 package tests;
 
+import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import net.bingosoft.oss.ssoclient.internal.HttpClient;
+import org.apache.http.protocol.HTTP;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -9,8 +11,11 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 
@@ -27,6 +32,9 @@ public class HttpClientTest {
         stubFor(post("/300").willReturn(aResponse().withStatus(300).withBody("this is multiple choices api")));
         stubFor(post("/400").willReturn(aResponse().withStatus(400).withBody("this is bad request api")));
         stubFor(post("/500").willReturn(aResponse().withStatus(500).withBody("this is error api")));
+        MappingBuilder mb = get("/get?access_token=abc")
+                .willReturn(aResponse().withStatus(200).withBody("get ok"));
+        stubFor(mb);
     }
     
     @Test
@@ -64,4 +72,9 @@ public class HttpClientTest {
         Assert.assertTrue(HttpClient.post(baseUrl+"/300",p,null).contains("this is multiple choices api"));
     }
     
+    @Test
+    public void testGet(){
+        String res = HttpClient.get(baseUrl+"/get?access_token=abc");
+        Assert.assertEquals("get ok",res);
+    }
 }

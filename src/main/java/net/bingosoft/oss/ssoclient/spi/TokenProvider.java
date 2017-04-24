@@ -28,7 +28,7 @@ public interface TokenProvider {
 
     Authentication verifyIdToken(String idToken) throws InvalidTokenException, TokenExpiredException;
     
-    Authentication verifyBearerAccessToken(String accessToken);
+    Authentication verifyBearerAccessToken(String accessToken) throws InvalidTokenException, TokenExpiredException;
 
     /**
      * 通过授权码获取access token
