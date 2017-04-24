@@ -3,6 +3,8 @@ package net.bingosoft.oss.ssoclient.internal;
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Urls {
     public static String appendQueryString(String url, String name, String value) {
@@ -22,6 +24,29 @@ public class Urls {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    public static Map<String, String> parseQueryString(String url){
+        Map<String, String> map = new HashMap<String, String>();
+        if(null == url){
+            return map;
+        }
+        if(url.indexOf("?") < 0){
+            return map;
+        }
+        String queryString = url.substring(url.indexOf("?")+1);
+        if(queryString.isEmpty()){
+            return map;
+        }
+        String[] kvs = queryString.split("&");
+        
+        for(String kv : kvs){
+            int ei = kv.indexOf("=");
+            String k = kv.substring(0,ei);
+            String v = kv.substring(ei+1);
+            map.put(k,v);
+        }
+        return map;
     }
     
     public static String getServerContextUrl(final HttpServletRequest request){
