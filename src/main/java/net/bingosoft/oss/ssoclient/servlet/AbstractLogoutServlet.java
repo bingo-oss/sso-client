@@ -72,7 +72,7 @@ public abstract class AbstractLogoutServlet extends HttpServlet {
         String returnUrl = req.getParameter(POST_LOGOUT_REDIRECT_URI_PARAM);
         if(Strings.isEmpty(returnUrl)){
             returnUrl = Urls.getServerContextUrl(req);
-            
+            returnUrl = returnUrl + getContextPathOfReverseProxy(req);
             String state = getStateQueryParam(req,resp);
             if(!Strings.isEmpty(state)){
                 returnUrl = Urls.appendQueryString(returnUrl,"__state__",state);
@@ -83,6 +83,23 @@ public abstract class AbstractLogoutServlet extends HttpServlet {
         return logoutUrl;
     }
 
+    /**
+     * 获取请求访问的uri，默认情况下是<code>req.getContextPath()</code>
+     * 如果这个应用是通过反向代理（如：网关）的话，这里的返回值就不一定正确，此时需要重写这个方法。
+     *
+     * 返回当前应用的contextPath
+     *
+     * 示例：
+     * <pre>
+     *     不经过反向代理：return req.getContextPath()
+     *     经过反向代理： return "/proxyPath"
+     * </pre>
+     *
+     */
+    protected String getContextPathOfReverseProxy(HttpServletRequest req){
+        return req.getContextPath();
+    }
+    
     /**
      * 在SSO注销之后，默认会跳转回到应用根地址，这个时候有可能由于缓存导致浏览器不会自动跳转到登录页。
      * 

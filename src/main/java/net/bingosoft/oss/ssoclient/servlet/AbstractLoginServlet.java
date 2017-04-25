@@ -130,7 +130,10 @@ public abstract class AbstractLoginServlet extends HttpServlet{
      */
     protected String buildRedirectUri(HttpServletRequest req, HttpServletResponse resp){
         String baseUrl = Urls.getServerBaseUrl(req);
-        String current = baseUrl + req.getRequestURI();
+        
+        String requestUri = parseRequestUriWithoutContextPath(req);
+        String current = baseUrl + getContextPathOfReverseProxy(req) + requestUri;
+        
         String queryString = req.getQueryString();
         if(Strings.isEmpty(queryString)){
             return current;
@@ -139,6 +142,37 @@ public abstract class AbstractLoginServlet extends HttpServlet{
         }
     }
 
+    /**
+     * 返回一个不包含contextPath的请求路径，如:<code>/ssoclient/login</code>
+     */
+    protected String parseRequestUriWithoutContextPath(HttpServletRequest req){
+        String requestUri = req.getRequestURI();
+        String contextPath = req.getContextPath();
+        requestUri = requestUri.substring(contextPath.length());
+        if(requestUri.startsWith("/")){
+            return requestUri;
+        }else {
+            return "/"+requestUri;
+        }
+    }
+    
+    /**
+     * 获取请求访问的uri，默认情况下是<code>req.getContextPath()</code>
+     * 如果这个应用是通过反向代理（如：网关）的话，这里的返回值就不一定正确，此时需要重写这个方法。
+     *
+     * 返回当前应用的contextPath
+     *
+     * 示例：
+     * <pre>
+     *     不经过反向代理：return req.getContextPath()
+     *     经过反向代理： return "/proxyPath"
+     * </pre>
+     *
+     */
+    protected String getContextPathOfReverseProxy(HttpServletRequest req){
+        return req.getContextPath();
+    }
+    
     protected boolean isRedirectedFromSSO(HttpServletRequest req){
         String idToken = req.getParameter(ID_TOKEN_PARAM);
         String accessToken = req.getParameter(AUTHZ_CODE_PARAM);

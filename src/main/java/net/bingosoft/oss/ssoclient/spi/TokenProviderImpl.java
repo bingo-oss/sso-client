@@ -187,10 +187,20 @@ public class TokenProviderImpl implements TokenProvider {
         
         verifyJwtAccessToken(accessToken);
 
+        return obtainAccessTokenByTokenClientCredentials(accessToken);
+    }
+
+    @Override
+    public AccessToken obtainAccessTokenByClientCredentialsWithBearerToken(
+            String accessToken) throws InvalidTokenException, TokenExpiredException {
+        return obtainAccessTokenByTokenClientCredentials(accessToken);
+    }
+
+    protected AccessToken obtainAccessTokenByTokenClientCredentials(String accessToken) throws TokenExpiredException{
         Map<String, String> params = new HashMap<String, String>();
-        params.put("grant_type","jwt_client_credentials");
-        params.put("jwt_token",accessToken);
-        
+        params.put("grant_type","token_client_credentials");
+        params.put("access_token",accessToken);
+
         String json = HttpClient.post(config.getTokenEndpointUrl(),params,createAuthorizationHeader());
 
         Map<String, Object> map;
@@ -199,23 +209,18 @@ public class TokenProviderImpl implements TokenProvider {
         } catch (Exception e) {
             throw new RuntimeException("parse json error",e);
         }
-        
+        if(map.containsKey("error")){
+            throw new InvalidTokenException("invalid token:"+map.get("error_description"));
+        }
         AccessToken token = createAccessTokenFromMap(map);
 
         if(token.isExpired()){
             throw new TokenExpiredException("access token obtain by jwt client credentials is expired!");
         }
-        
+
         return token;
     }
-
-    @Override
-    public AccessToken obtainAccessTokenByClientCredentialsWithBearerToken(
-            String accessToken) throws InvalidTokenException, TokenExpiredException {
-        // TODO:
-        throw new UnsupportedOperationException("not implement");
-    }
-
+    
     protected Map<String,Object> retryVerify(String accessToken) {
         //先刷新public key
         refreshPublicKey();

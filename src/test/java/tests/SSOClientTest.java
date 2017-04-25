@@ -12,7 +12,6 @@ import net.bingosoft.oss.ssoclient.SSOUtils;
 import net.bingosoft.oss.ssoclient.exception.InvalidCodeException;
 import net.bingosoft.oss.ssoclient.exception.InvalidTokenException;
 import net.bingosoft.oss.ssoclient.exception.TokenExpiredException;
-import net.bingosoft.oss.ssoclient.internal.Base64;
 import net.bingosoft.oss.ssoclient.internal.JSON;
 import net.bingosoft.oss.ssoclient.internal.Urls;
 import net.bingosoft.oss.ssoclient.model.AccessToken;
@@ -221,18 +220,6 @@ public class SSOClientTest {
         }
         Assert.assertTrue(expires);
         removeStub(mb);
-    }
-    
-    @Test
-    public void testUnsupportedOperation(){
-        // Bearer类型的at校验
-        boolean unsupported = false;
-        try {
-            client.obtainAccessTokenByClientCredentialsWithToken(UUID.randomUUID().toString());
-        }catch (UnsupportedOperationException e){
-            unsupported = true;
-        }
-        Assert.assertTrue(unsupported);
     }
     
     @Test
@@ -542,22 +529,6 @@ public class SSOClientTest {
         }
         Assert.assertTrue(errorJson);
         Assert.assertTrue(errorMsg.contains("parse json error"));
-
-        // 暂时不支持bearer token
-        boolean unsupport = false;
-        try {
-            client.obtainAccessTokenByClientCredentialsWithToken(UUID.randomUUID().toString());
-        } catch (InvalidTokenException e) {
-            e.printStackTrace();
-        } catch (TokenExpiredException e) {
-            e.printStackTrace();
-        } catch (UnsupportedOperationException e){
-            unsupport = true;
-        }
-        Assert.assertTrue(unsupport);
-        
-        
-        
     }
     
     @Test
