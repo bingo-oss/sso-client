@@ -436,7 +436,7 @@ public class SSOClientTest {
     @Test
     public void testObtainAccessTokenByClientCredentialsWithToken(){
         Map<String, String> params = new HashMap<String, String>();
-        params.put("grant_type","jwt_client_credentials");
+        params.put("grant_type","token_client_credentials");
 
         Map<String, String> resp = new HashMap<String, String>();
         resp.put("access_token","accesstoken");
@@ -451,7 +451,7 @@ public class SSOClientTest {
         JwtBuilder jwtBuilder = jwtBuilder(System.currentTimeMillis()+1000*600)
                 .signWith(SignatureAlgorithm.RS256,keyPair.getPrivate());
         String jwt = jwtBuilder.compact();
-        params.put("jwt_token",jwt);
+        params.put("access_token",jwt);
         
         // 正常获取
         MappingBuilder mb = post("/oauth2/token").withPostServeAction("postParams",params)
@@ -529,6 +529,16 @@ public class SSOClientTest {
         }
         Assert.assertTrue(errorJson);
         Assert.assertTrue(errorMsg.contains("parse json error"));
+        
+        // 通过普通access token换取新token
+        resp.put("expires_in","3600");
+        removeStub(mb);
+        mb = post("/oauth2/token").withPostServeAction("postParams",params)
+                .withHeader("Authorization", equalTo(basicHeader))
+                .willReturn(aResponse().withStatus(200).withBody(JSON.encode(resp)));
+        stubFor(mb);
+        accessToken = client.obtainAccessTokenByClientCredentialsWithToken(UUID.randomUUID().toString());
+        assertAccessToken(accessToken);
     }
     
     @Test
