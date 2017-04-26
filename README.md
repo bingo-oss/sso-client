@@ -152,8 +152,6 @@ String ssoLogoutUrl = SSOUtils.getSSOLogoutUrl(client,returnUrl);
 resp.sendRedirect(ssoLogoutUrl);
 ```
 
-到这里单点注销配置完成。
-
 ### 4. 获取访问令牌 (Obtain Access Token)
 
 访问令牌(access token)是用来代表请求发起者的身份的，一般来说访问令牌有两种可能：
