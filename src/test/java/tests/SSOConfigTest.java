@@ -28,12 +28,16 @@ import org.junit.Test;
 public class SSOConfigTest {
     @Test
     public void testSettersAndGetters(){
+        String ssoBaseUrl = "http://localhost:9999";
         SSOConfig config = new SSOConfig();
         config.setClientId("clientId");
         config.setClientSecret("clientSecret");
-        config.setPublicKeyEndpointUrl("http://localhost:9999");
+        config.autoConfigureUrls(ssoBaseUrl);
         Assert.assertEquals("clientId",config.getClientId());
         Assert.assertEquals("clientSecret",config.getClientSecret());
-        Assert.assertEquals("http://localhost:9999",config.getPublicKeyEndpointUrl());
+        Assert.assertEquals(ssoBaseUrl+"/publickey",config.getPublicKeyEndpointUrl());
+        Assert.assertEquals(ssoBaseUrl+"/oauth2/token",config.getTokenEndpointUrl());
+        Assert.assertEquals(ssoBaseUrl+"/oauth2/authorize",config.getAuthorizationEndpointUrl());
+        Assert.assertEquals(ssoBaseUrl+"/oauth2/logout",config.getOauthLogoutEndpoint());
     }
 }

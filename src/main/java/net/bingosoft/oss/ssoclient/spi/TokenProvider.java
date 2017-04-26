@@ -16,14 +16,46 @@
 
 package net.bingosoft.oss.ssoclient.spi;
 
+import net.bingosoft.oss.ssoclient.exception.InvalidCodeException;
 import net.bingosoft.oss.ssoclient.exception.InvalidTokenException;
 import net.bingosoft.oss.ssoclient.exception.TokenExpiredException;
+import net.bingosoft.oss.ssoclient.model.AccessToken;
 import net.bingosoft.oss.ssoclient.model.Authentication;
 
 public interface TokenProvider {
-
+    
     Authentication verifyJwtAccessToken(String accessToken) throws InvalidTokenException, TokenExpiredException;
 
-    Authentication verifyBearerAccessToken(String accessToken);
+    Authentication verifyIdToken(String idToken) throws InvalidTokenException, TokenExpiredException;
+    
+    Authentication verifyBearerAccessToken(String accessToken) throws InvalidTokenException, TokenExpiredException;
 
+    /**
+     * 通过授权码获取access token
+     * 
+     * @since 3.0.1
+     */
+    AccessToken obtainAccessTokenByAuthzCode(String authzCode) throws InvalidCodeException,TokenExpiredException;
+
+    /**
+     * 
+     * 通过<code>clientId</code>和<code>ClientSecret</code>获取access token
+     * 
+     * @since 3.0.1
+     */
+    AccessToken obtainAccessTokenByClientCredentials();
+
+    /**
+     * 通过<code>clientId</code>和<code>ClientSecret</code>加上jwt access token获取access token
+     * 
+     * @since 3.0.1
+     */
+    AccessToken obtainAccessTokenByClientCredentialsWithJwtToken(String accessToken) throws InvalidTokenException, TokenExpiredException;
+    
+    /**
+     * 通过<code>clientId</code>和<code>ClientSecret</code>加上bearer access token获取access token
+     *
+     * @since 3.0.1
+     */
+    AccessToken obtainAccessTokenByClientCredentialsWithBearerToken(String accessToken) throws InvalidTokenException, TokenExpiredException;
 }

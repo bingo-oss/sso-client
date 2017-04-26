@@ -23,8 +23,13 @@ public class SSOConfig {
 
     protected String clientId;
     protected String clientSecret;
+    protected String redirectUri;
     protected String publicKeyEndpointUrl;
-
+    protected String tokenEndpointUrl;
+    protected String tokenInfoEndpointUrl;
+    protected String authorizationEndpointUrl;
+    protected String oauthLogoutEndpoint;
+    
     //todo :
 
     public SSOConfig() {
@@ -66,6 +71,21 @@ public class SSOConfig {
     }
 
     /**
+     * 返回应用的回调地址(redirect_uri)
+     * 
+     * @since 3.0.1
+     */
+    public String getRedirectUri() {
+        return redirectUri;
+    }
+    /**
+     * @since 3.0.1
+     */
+    public void setRedirectUri(String redirectUri) {
+        this.redirectUri = redirectUri;
+    }
+
+    /**
      * 返回获取SSO服务器公钥的url
      */
     public String getPublicKeyEndpointUrl() {
@@ -74,6 +94,66 @@ public class SSOConfig {
 
     public void setPublicKeyEndpointUrl(String publicKeyEndpointUrl) {
         this.publicKeyEndpointUrl = publicKeyEndpointUrl;
+    }
+
+    /**
+     * 返回SSO生成access token的url
+     * 
+     * @since 3.0.1
+     */
+    public String getTokenEndpointUrl() {
+        return tokenEndpointUrl;
+    }
+    /**
+     * @since 3.0.1
+     */
+    public void setTokenEndpointUrl(String tokenEndpointUrl) {
+        this.tokenEndpointUrl = tokenEndpointUrl;
+    }
+
+    /**
+     * 返回获取token信息的url
+     * 
+     * @since 3.0.1
+     */
+    public String getTokenInfoEndpointUrl() {
+        return tokenInfoEndpointUrl;
+    }
+    /**
+     * @since 3.0.1
+     */
+    public void setTokenInfoEndpointUrl(String tokenInfoEndpointUrl) {
+        this.tokenInfoEndpointUrl = tokenInfoEndpointUrl;
+    }
+
+    /**
+     * 返回SSO登录验证地址
+     * 
+     * @since 3.0.1
+     */
+    public String getAuthorizationEndpointUrl() {
+        return authorizationEndpointUrl;
+    }
+    /**
+     * @since 3.0.1
+     */
+    public void setAuthorizationEndpointUrl(String authorizationEndpointUrl) {
+        this.authorizationEndpointUrl = authorizationEndpointUrl;
+    }
+
+    /**
+     * 返回SSO单点注销地址
+     * 
+     * @since 3.0.1
+     */
+    public String getOauthLogoutEndpoint() {
+        return oauthLogoutEndpoint;
+    }
+    /**
+     * @since 3.0.1
+     */
+    public void setOauthLogoutEndpoint(String oauthLogoutEndpoint) {
+        this.oauthLogoutEndpoint = oauthLogoutEndpoint;
     }
 
     /**
@@ -93,9 +173,15 @@ public class SSOConfig {
         if(baseUrl.endsWith("/")) {
             baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
         }
-
         //todo :
         this.setPublicKeyEndpointUrl(baseUrl + "/publickey");
+        this.setTokenEndpointUrl(baseUrl + "/oauth2/token");
+        this.setAuthorizationEndpointUrl(baseUrl + "/oauth2/authorize");
+        this.setOauthLogoutEndpoint(baseUrl + "/oauth2/logout");
+        this.setTokenInfoEndpointUrl(baseUrl + "/oauth2/tokeninfo");
         return this;
     }
+    
+
+    
 }

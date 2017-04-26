@@ -1,6 +1,10 @@
 package tests;
 
+import net.bingosoft.oss.ssoclient.SSOClient;
+import net.bingosoft.oss.ssoclient.SSOConfig;
 import net.bingosoft.oss.ssoclient.SSOUtils;
+import net.bingosoft.oss.ssoclient.internal.Base64;
+import net.bingosoft.oss.ssoclient.internal.Urls;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -40,7 +44,17 @@ public class SSOUtilsTest {
         accessToken = SSOUtils.extractAccessToken(mockReq3);
         Assert.assertEquals("123",accessToken);
     }
-    
+    @Test
+    public void testGetLogoutUrl(){
+        SSOConfig c = new SSOConfig();
+        c.autoConfigureUrls("http://sso.domain.com");
+        SSOClient client = new SSOClient(c);
+        String logoutUrl = SSOUtils.getSSOLogoutUrl(client,"http://www.example.com");
+        Assert.assertEquals("http://sso.domain.com/oauth2/logout?post_logout_redirect_uri="+ Urls.encode("http://www.example.com"),logoutUrl);
+        logoutUrl = SSOUtils.getSSOLogoutUrl(client,null);
+        Assert.assertEquals("http://sso.domain.com/oauth2/logout",logoutUrl);
+        
+    }
     
     
     private HttpServletRequest mockReq1 = new HttpServletRequest(){
