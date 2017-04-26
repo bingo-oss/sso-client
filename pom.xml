@@ -4,7 +4,7 @@
 
     <groupId>net.bingosoft.oss</groupId>
     <artifactId>sso-client</artifactId>
-    <version>3.0.1</version>
+    <version>3.0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>sso-client</name>
@@ -37,7 +37,7 @@
         <connection>scm:git:git@github.com:bingo-oss/sso-client.git</connection>
         <developerConnection>scm:git:git@github.com:bingo-oss/sso-client.git</developerConnection>
         <url>http://github.com/bingo-oss/sso-client/tree/master</url>
-      <tag>3.0.1</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <distributionManagement>
