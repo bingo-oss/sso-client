@@ -354,3 +354,11 @@ http://www.example.com:80/demo/ssoclient/**
 
 如果不希望增加这个参数，可以重写`AbstractLogoutServlet.getStateQueryParam(req,resp)`这个方法，返回空值。
 
+----
+
+**问：配置好单点登录后，如果使用了反向代理，SDK登录重定向的url不对怎么办？**
+
+答：使用反向代理的时候，要配置代理:
+* 在请求头设置`host`请求头为代理服务器地址
+* 设置`x-forwarded-proto`请求头为访问协议(http或https)
+* 根据代理后的contextPath重写`AbstractLoginServlet.getContextPathOfReverseProxy(req)`方法

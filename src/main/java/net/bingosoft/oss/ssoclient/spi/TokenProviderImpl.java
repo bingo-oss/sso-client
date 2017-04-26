@@ -215,7 +215,7 @@ public class TokenProviderImpl implements TokenProvider {
         AccessToken token = createAccessTokenFromMap(map);
 
         if(token.isExpired()){
-            throw new TokenExpiredException("access token obtain by token client credentials is expired!");
+            throw new TokenExpiredException("access token obtain by token p client credentials is expired!");
         }
 
         return token;

@@ -65,7 +65,10 @@ public abstract class AbstractLoginServlet extends HttpServlet{
 
             String returnUrl = req.getParameter("return_url");
             if(Strings.isEmpty(returnUrl)){
-                returnUrl = Urls.getServerContextUrl(req);
+                returnUrl = Urls.getServerBaseUrl(req)+getContextPathOfReverseProxy(req);
+                if(returnUrl.endsWith("//")){
+                    returnUrl.substring(0,returnUrl.length()-1);
+                }
             }
             resp.sendRedirect(returnUrl);
         }else {
