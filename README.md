@@ -11,7 +11,7 @@
 <dependency>
 	<groupId>net.bingosoft.oss</groupId>
 	<artifactId>sso-client</artifactId>
-	<version>[3.0.0,]</version>
+	<version>[3.0.1,]</version>
 </dependency>
 ```
 
@@ -98,6 +98,10 @@ long expires = authc.getExpires();
 1. 实现一个`AbstractLoginServlet`的HttpServlet
 
 ```java
+package demo;
+
+...
+
 public class LoginServlet extends net.bingosoft.oss.ssoclient.servlet.AbstractLoginServlet {
     @Override
     protected SSOClient getClient(ServletConfig config) {
@@ -116,11 +120,11 @@ public class LoginServlet extends net.bingosoft.oss.ssoclient.servlet.AbstractLo
 
 ```xml
 <servlet>
-    <servlet-name>ssoclient</servlet-name>
+    <servlet-name>ssologin</servlet-name>
     <servlet-class>demo.LoginServlet</servlet-class>
 </servlet>
 <servlet-mapping>
-    <servlet-name>ssoclient</servlet-name>
+    <servlet-name>ssologin</servlet-name>
     <!-- 这个servlet的访问地址，非必要的情况建议不要修改 -->
     <url-pattern>/ssoclient/login</url-pattern>
 </servlet-mapping>
@@ -196,11 +200,11 @@ public class LogoutServlet extends net.bingosoft.oss.ssoclient.servlet.AbstractL
 
 ```xml
 <servlet>
-    <servlet-name>logout</servlet-name>
+    <servlet-name>ssologout</servlet-name>
     <servlet-class>demo.LogoutServlet</servlet-class>
 </servlet>
 <servlet-mapping>
-    <servlet-name>logout</servlet-name>
+    <servlet-name>ssologout</servlet-name>
     <url-pattern>/logout</url-pattern><!-- 注销本地访问地址，这个访问地址要和应用注册的注销地址一致 -->
     <url-pattern>/oauth2_logout</url-pattern><!-- 注销SSO访问地址 -->
 </servlet-mapping>
@@ -217,16 +221,17 @@ web应用登陆后，只要访问`${contextPath}/oauth2_logout`即可完成单�
 * **仅代表应用身份**：用于调用只需要验证应用身份的服务 
 * **同时代表用户和应用的身份**：用于调用同时需要验证用户身份和应用身份的服务，也可以用于只校验应用的情况
 
-访问令牌一般有四个属性：
+访问令牌一般有三个属性：
 
 ```java
 AccessToken token = new AccessToken();
+
 // 访问令牌，真正代表用户和应用身份的令牌
 String accessToken = token.getAccessToken();
+
 // 刷新令牌，当这个访问令牌过期后，可以用刷新令牌换取新的访问令牌
 String refreshToken = token.getRefreshToken();
-// 令牌类型，一般是"Bearer"
-String tokenType = token.getTokenType();
+
 // 过期时间，指的是距离标准日期1970-01-01T00:00:00Z UTC的秒数
 long expires = token.getExpires();
 ```
@@ -265,7 +270,7 @@ AccessToken token = client.obtainAccessTokenByClientCredentials();
 ```java
 // HttpServletRequest req;
 String accessToken = SSOUtils.extractAccessToken(req);
-AccessToken clientAndUser = client.obtainAccessTokenByClientCredentialsWithToken(accessToken);
+AccessToken clientAndUser = client.obtainAccessTokenByToken(accessToken);
 ```
 
 这里`accessToken`代表的是用户身份，`clientAndUser`代表的是用户身份和client的身份。
@@ -361,3 +366,4 @@ http://www.example.com:80/demo/ssoclient/**
 * 在请求头设置`host`请求头为代理服务器地址
 * 设置`x-forwarded-proto`请求头为访问协议(http或https)
 * 根据代理后的contextPath重写`AbstractLoginServlet.getContextPathOfReverseProxy(req)`方法
+
