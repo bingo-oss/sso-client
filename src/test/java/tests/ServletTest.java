@@ -67,8 +67,6 @@ public class ServletTest {
         client = new SSOClient(c);
         
         sr.registerServlet( "/ssoclient/login", LoginServlet.class.getName());
-        sr.registerServlet( "/oauth2_logout", LogoutServlet.class.getName());
-        sr.registerServlet( "/logout", LogoutServlet.class.getName());
 
         String pk = org.apache.commons.codec.binary.Base64.encodeBase64String(keyPair.getPublic().getEncoded());
 
@@ -120,26 +118,6 @@ public class ServletTest {
         
     }
     
-    @Test
-    public void testLogout() throws IOException {
-        ServletUnitClient sc = sr.newClient();
-        // 跳转到SSO注销
-        WebRequest request = new GetMethodWebRequest(LOCAL_HOST+"/oauth2_logout");
-        WebResponse response = sc.getResource(request);
-        assertEquals(302,response.getResponseCode());
-        String location = response.getHeaderField("location");
-        assertTrue(location.startsWith("http://localhost:9999/oauth2/logout?post_logout_redirect_uri=http%3A%2F%2Flocalhost%3A0%3F"));
-        
-        // 本地注销
-        map.remove("logout");
-        request = new GetMethodWebRequest(LOCAL_HOST+"/logout");
-        response = sc.getResource(request);
-        
-        assertEquals("true",map.get("logout"));
-        
-        assertEquals(200,response.getResponseCode());
-    }
-    
     public static class LoginServlet extends AbstractLoginServlet{
         @Override
         protected SSOClient getClient(ServletConfig config) throws ServletException {
@@ -154,18 +132,4 @@ public class ServletTest {
             Assert.assertEquals("accesstoken",token.getAccessToken());
         }
     }
-
-    public static class LogoutServlet extends AbstractLogoutServlet{
-        @Override
-        protected SSOClient getClient(ServletConfig config) throws ServletException {
-            return client;
-        }
-
-        @Override
-        protected void localLogout(HttpServletRequest req,
-                                   HttpServletResponse resp) throws ServletException, IOException {
-            map.put("logout","true");
-        }
-    }
-    
 }

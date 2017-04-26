@@ -157,8 +157,8 @@ public class SSOClient {
      * 
      * @since 3.0.1
      */
-    public AccessToken obtainAccessTokenByClientCredentialsWithToken(String accessToken) throws InvalidTokenException, TokenExpiredException{
-        String key = "obtainAccessTokenByClientCredentialsWithToken:"+accessToken;
+    public AccessToken obtainAccessTokenByToken(String accessToken) throws InvalidTokenException, TokenExpiredException{
+        String key = "obtainAccessTokenByToken:"+accessToken;
         AccessToken token = getAccessTokenFromCache(key);
         if (token != null){
             return token;

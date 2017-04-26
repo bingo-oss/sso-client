@@ -458,21 +458,21 @@ public class SSOClientTest {
                 .withHeader("Authorization", equalTo(basicHeader))
                 .willReturn(aResponse().withStatus(200).withBody(JSON.encode(resp)));
         stubFor(mb);
-        AccessToken accessToken = client.obtainAccessTokenByClientCredentialsWithToken(jwt);
+        AccessToken accessToken = client.obtainAccessTokenByToken(jwt);
         assertAccessToken(accessToken);
         // 缓存
-        AccessToken accessToken1 = client.obtainAccessTokenByClientCredentialsWithToken(jwt);
+        AccessToken accessToken1 = client.obtainAccessTokenByToken(jwt);
         Assert.assertTrue(accessToken==accessToken1);
         // 缓存过期
         accessToken.setExpires(10);
-        accessToken1 = client.obtainAccessTokenByClientCredentialsWithToken(jwt);
+        accessToken1 = client.obtainAccessTokenByToken(jwt);
         Assert.assertTrue(accessToken!=accessToken1);
         
         // jwt过期
         jwt = jwtBuilder.setExpiration(new Date(System.currentTimeMillis()-1000*60)).compact();
         boolean expires = false;
         try {
-            client.obtainAccessTokenByClientCredentialsWithToken(jwt);
+            client.obtainAccessTokenByToken(jwt);
         } catch (InvalidTokenException e) {
             e.printStackTrace();
         } catch (TokenExpiredException e) {
@@ -485,7 +485,7 @@ public class SSOClientTest {
                 .setExpiration(new Date(System.currentTimeMillis()+1000*600)).compact();
         boolean invalid = false;
         try {
-            client.obtainAccessTokenByClientCredentialsWithToken(jwt);
+            client.obtainAccessTokenByToken(jwt);
         } catch (InvalidTokenException e) {
             invalid = true;
         } catch (TokenExpiredException e) {
@@ -502,7 +502,7 @@ public class SSOClientTest {
         stubFor(mb);
         expires = false;
         try {
-            client.obtainAccessTokenByClientCredentialsWithToken(jwt);
+            client.obtainAccessTokenByToken(jwt);
         } catch (InvalidTokenException e) {
             e.printStackTrace();
         } catch (TokenExpiredException e) {
@@ -518,7 +518,7 @@ public class SSOClientTest {
         boolean errorJson = false;
         String errorMsg = null;
         try {
-            client.obtainAccessTokenByClientCredentialsWithToken(jwt);
+            client.obtainAccessTokenByToken(jwt);
         } catch (InvalidTokenException e) {
             e.printStackTrace();
         } catch (TokenExpiredException e) {
@@ -537,7 +537,7 @@ public class SSOClientTest {
                 .withHeader("Authorization", equalTo(basicHeader))
                 .willReturn(aResponse().withStatus(200).withBody(JSON.encode(resp)));
         stubFor(mb);
-        accessToken = client.obtainAccessTokenByClientCredentialsWithToken(UUID.randomUUID().toString());
+        accessToken = client.obtainAccessTokenByToken(UUID.randomUUID().toString());
         assertAccessToken(accessToken);
     }
     
@@ -729,8 +729,8 @@ public class SSOClientTest {
         client.verifyIdToken(jwtToken);
         client.obtainAccessTokenByCode(authCode);
         client.obtainAccessTokenByClientCredentials();
-        client.obtainAccessTokenByClientCredentialsWithToken(jwtToken);
-        client.obtainAccessTokenByClientCredentialsWithToken(UUID.randomUUID().toString());
+        client.obtainAccessTokenByToken(jwtToken);
+        client.obtainAccessTokenByToken(UUID.randomUUID().toString());
         Assert.assertTrue(used.get("verifyJwtAccessToken"));
         Assert.assertTrue(used.get("verifyBearerAccessToken"));
         Assert.assertTrue(used.get("verifyIdToken"));

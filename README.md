@@ -100,7 +100,7 @@ long expires = authc.getExpires();
 ```java
 package demo;
 
-...
+//...
 
 public class LoginServlet extends net.bingosoft.oss.ssoclient.servlet.AbstractLoginServlet {
     @Override
@@ -130,89 +130,29 @@ public class LoginServlet extends net.bingosoft.oss.ssoclient.servlet.AbstractLo
 </servlet-mapping>
 ```
 
-3. 设置登录跳转地址和登录校验忽略地址
+3. 设置登录跳转地址
 
-* 在web应用中，对所有需要登录的请求重定向到`/ssoclient/login`这个地址上进行单点登录
-* 忽略`/ssoclient/login`这个地址的登录校验防止重定向无限循环
+在web应用中，对所有需要登录的请求重定向到`/ssoclient/login`这个地址上进行单点登录。
 
-这里以一个Filter示例：
-
-```java
-public class LoginFilter implements javax.servlet.Filter {
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response,
-                         FilterChain chain) throws IOException, ServletException {
-        HttpServletRequest req = (HttpServletRequest)request;
-        HttpServletResponse resp = (HttpServletResponse)response;        
-        // 省略判断是否已经登录的代码...
-        
-        // 忽略到LoginServlet的请求
-        String url = req.getRequestURI();
-        if(url.startsWith(req.getContextPath()+"/ssoclient/")){
-            chain.doFilter(req,resp);
-            return;
-        }
-        // 重定向到LoginServlet
-        // 可以通过设置return_url参数决定登录完成后跳转的地址,参数值是经过url编码的地址
-        // 如return_url=http%3A%2F%2Flocalhost%3A8080%2Fdemo
-        String redirectUri = req.getContextPath()+"/ssoclient/login";
-        resp.sendRedirect(redirectUri);
-    }
-    
-    // 省略其他方法实现...
-}
-```
-
-`web.xml`配置如下：
-
-```xml
-<filter>
-    <filter-name>loginFilter</filter-name>
-    <filter-class>demo.LoginFilter</filter-class>
-</filter>
-<filter-mapping>
-    <filter-name>loginFilter</filter-name>
-    <url-pattern>/*</url-pattern>
-</filter-mapping>
-```
+> 注：可以通过设置return_url参数决定登录完成后跳转的地址,参数值是经过url编码的地址，如：  
+> `return_url=http%3A%2F%2Flocalhost%3A8080%2Fdemo`
 
 到这里接入配置完成。
 
 #### 3.2 注销
 
-1. 实现一个`AbstractLogoutServlet`的Servlet:
+单点注销只要跳转到SSO注销地址注销即可。
 
 ```java
-public class LogoutServlet extends net.bingosoft.oss.ssoclient.servlet.AbstractLogoutServlet {
-    @Override
-    protected SSOClient getClient(ServletConfig config) {
-        // 返回一个已经配置好的SSOClient
-        return new SSOClient();
-    }
-    @Override
-    protected void localLogout(HttpServletRequest req, HttpServletResponse resp) {
-        // 省略本地注销的代码...
-    }
-}
-```
-
-2. 配置注销地址
-
-```xml
-<servlet>
-    <servlet-name>ssologout</servlet-name>
-    <servlet-class>demo.LogoutServlet</servlet-class>
-</servlet>
-<servlet-mapping>
-    <servlet-name>ssologout</servlet-name>
-    <url-pattern>/logout</url-pattern><!-- 注销本地访问地址，这个访问地址要和应用注册的注销地址一致 -->
-    <url-pattern>/oauth2_logout</url-pattern><!-- 注销SSO访问地址 -->
-</servlet-mapping>
+// HttpServletResponse resp;
+// SSOClient client;
+// 注销后的返回地址
+String returnUrl = "http://www.example.com";
+String ssoLogoutUrl = SSOUtils.getSSOLogoutUrl(client,returnUrl);
+resp.sendRedirect(ssoLogoutUrl);
 ```
 
 到这里单点注销配置完成。
-
-web应用登陆后，只要访问`${contextPath}/oauth2_logout`即可完成单点注销。
 
 ### 4. 获取访问令牌 (Obtain Access Token)
 
@@ -336,27 +276,11 @@ http://www.example.com:80/demo/ssoclient/**
 
 ----
 
-**问：配置好单点注销之后，为什么没有跳转到SSO注销？**
-
-答：检查配置的SSO注销地址:
-* 是否以`/oauth2_logout`结尾的地址
-* 是否被其他拦截器拦截
-
-----
-
-**问：配置好单点注销之后，跳转到SSO注销完成，为什么本地登录没有被注销？**
+**问：跳转到SSO注销完成后，为什么本地登录没有被注销？**
 
 答：SSO注销完成后，会根据应用在SSO注册的注销地址(logout_uri)向应用发注销请求，如果本地注销不了，需要检查：
 * 应用注册的注销地址是不是应用配置的本地注销地址
 * 应用本地注销的地址是否被其他拦截器拦截
-
-----
-
-**问：为什么每次注销完成后，跳转回应用首页会有`__state__`这个参数？**
-
-答：注销完成后，跳转回项目首页为了防止浏览器缓存导致没有自动跳转到登录页，SDK默认自动增加了这个参数，参数值是随机数。
-
-如果不希望增加这个参数，可以重写`AbstractLogoutServlet.getStateQueryParam(req,resp)`这个方法，返回空值。
 
 ----
 

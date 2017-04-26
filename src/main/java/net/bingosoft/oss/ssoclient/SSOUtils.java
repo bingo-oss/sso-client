@@ -17,8 +17,11 @@
 package net.bingosoft.oss.ssoclient;
 
 import net.bingosoft.oss.ssoclient.internal.Base64;
+import net.bingosoft.oss.ssoclient.internal.Strings;
+import net.bingosoft.oss.ssoclient.internal.Urls;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * 工具类。
@@ -28,7 +31,7 @@ public class SSOUtils {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String BEARER               = "Bearer";
     public static final String BASIC                = "Basic";
-    
+    public static final String POST_LOGOUT_REDIRECT_URI_PARAM = "post_logout_redirect_uri";
     /**
      * 从{@link HttpServletRequest}对象中解析accessToken，这里的accessToken是放在名为Authorization的请求头里。
      * 
@@ -64,6 +67,24 @@ public class SSOUtils {
      */
     public static String encodeBasicAuthorizationHeader(String clientId, String clientSecret){
         return BASIC + " " + Base64.urlEncode(clientId+":"+clientSecret);
+    }
+
+    /**
+     * 返回单点注销地址
+     * 
+     * 应用注销的时候只要直接重定向到这个地址即可单点注销
+     * 
+     */
+    public static String getSSOLogoutUrl(SSOClient client, String returnUrl){
+        String logoutUrl = client.getConfig().getOauthLogoutEndpoint();
+        if(!Strings.isEmpty(returnUrl)){
+            logoutUrl = Urls.appendQueryString(logoutUrl,POST_LOGOUT_REDIRECT_URI_PARAM,returnUrl);
+        }
+        return logoutUrl;
+    }
+
+    private static String getContextPathOfReverseProxy(HttpServletRequest req){
+        return req.getContextPath();
     }
     
     protected SSOUtils() {}
