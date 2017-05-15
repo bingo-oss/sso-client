@@ -53,8 +53,10 @@ SSOConfig config = new SSOConfig();
 config.setClientId("clientId");
 // 设置应用密钥
 config.setClientSecret("clientSecret");
+// 设置应用资源名称，作为服务时，需要在SSO注册资源名称
+config.setResourceName("resourceName");
 // 设置回调地址
-ssoConfig.setRedirectUri(redirectUri);
+config.setRedirectUri(redirectUri);
 // 根据SSO地址自动配置其他地址
 config.autoConfigureUrls("http://sso.example.com");
 
