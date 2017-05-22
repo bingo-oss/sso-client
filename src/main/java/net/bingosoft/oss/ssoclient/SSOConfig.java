@@ -78,7 +78,7 @@ public class SSOConfig {
      * @since 3.0.2
      */
     public String getResourceName() {
-        return resourceName;
+        return resourceName==null?clientId:resourceName;
     }
 
     /**
