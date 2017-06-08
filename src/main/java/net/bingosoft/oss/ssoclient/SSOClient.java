@@ -65,7 +65,7 @@ public class SSOClient {
                 cp.remove(accessToken);
             }
         }
-        
+
         boolean jwt = checkJwtToken(accessToken);
         if(jwt) {
             authc = tp().verifyJwtAccessToken(accessToken);
@@ -83,7 +83,7 @@ public class SSOClient {
      *
      * @throws InvalidTokenException 如果idToken是无效的
      * @throws TokenExpiredException 如果idToken已经过期
-     * 
+     *
      * @since 3.0.1
      */
     public Authentication verifyIdToken(String idToken) throws InvalidTokenException, TokenExpiredException {
@@ -96,7 +96,7 @@ public class SSOClient {
                 cp.remove(idToken);
             }
         }
-        
+
         //check is jwt token?
         boolean jwt = checkJwtToken(idToken);
         if(jwt) {
@@ -111,8 +111,8 @@ public class SSOClient {
     }
 
     /**
-     * 验证登录后获取到的授权码并返回access token。 
-     * 
+     * 验证登录后获取到的授权码并返回access token。
+     *
      * 返回代表用户和应用的access token，这里的用户和应用由<code>authorizationCode</code>决定
      *
      * @throws InvalidTokenException
@@ -126,11 +126,11 @@ public class SSOClient {
     /**
      * 使用<code>client_id</code>和<code>client_secret</code>通过<code>grant_type=client_credentials</code>的方式
      * 获取access token。
-     * 
+     *
      * 返回SSO颁发给当前应用的access token，代表当前应用的身份。
-     * 
+     *
      * @see <a href="http://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication">ClientAuthentication</a>
-     * 
+     *
      * @since 3.0.1
      */
     public AccessToken obtainAccessTokenByClientCredentials() throws TokenExpiredException{
@@ -139,7 +139,7 @@ public class SSOClient {
         if (accessToken != null){
             return accessToken;
         }
-        
+
         accessToken = tp().obtainAccessTokenByClientCredentials();
         cp().put(key,accessToken,accessToken.getExpires());
         return accessToken;
@@ -147,14 +147,14 @@ public class SSOClient {
 
     /**
      * 使用<code>client_id</code>和<code>client_secret</code>加上用户的access token获取一个新的access token，
-     * 
+     *
      * 新的access token是SSO颁发给用户和当前应用的，这里的用户由<code>accessToken</code>决定
-     * 
+     *
      * 返回代表用户和当前应用的身份的access token。
-     * 
+     *
      * @throws InvalidTokenException 如果传入的accessToken是无效的
      * @throws TokenExpiredException 如果传入的accessToken已经过期
-     * 
+     *
      * @since 3.0.1
      */
     public AccessToken obtainAccessTokenByToken(String accessToken) throws InvalidTokenException, TokenExpiredException{
@@ -163,7 +163,7 @@ public class SSOClient {
         if (token != null){
             return token;
         }
-        
+
         boolean isJwt = checkJwtToken(accessToken);
         if(isJwt){
             token = tp().obtainAccessTokenByClientCredentialsWithJwtToken(accessToken);
@@ -172,6 +172,18 @@ public class SSOClient {
         }
         cp().put(key,token,token.getExpires());
         return token;
+    }
+
+    /**
+     * 通过<code>refresh_token</code>、<code>clientId</code>和<code>ClientSecret</code>获取新的token
+     * @param refreshToken
+     * @return
+     * @throws InvalidTokenException
+     * @throws TokenExpiredException
+     */
+    public AccessToken refreshToken(String refreshToken) throws InvalidTokenException, TokenExpiredException {
+    	AccessToken token=tp().refreshToken(refreshToken);
+    	return token;
     }
 
     protected AccessToken getAccessTokenFromCache(String key){
@@ -186,7 +198,7 @@ public class SSOClient {
         }
         return null;
     }
-    
+
     protected boolean checkJwtToken(String accessToken) {
         return accessToken.contains(".");
     }

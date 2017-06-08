@@ -25,30 +25,70 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Map;
 
+
 public class HttpClient {
+
+	/**
+     * 使用http get方法调用指定url并返回结果
+     */
+	public static String get(String url) throws HttpException {
+		return get(url,null,null);
+	}
+
     /**
      * 使用http get方法调用指定url并返回结果
      */
-    public static String get(String url) throws HttpException {
+    public static String get(String url,Map<String, String> queryParams,
+            Map<String, String> headers) throws HttpException {
         try {
+        	if(queryParams!=null && queryParams.size()>0){
+        		for (Map.Entry<String, String> entry : queryParams.entrySet()) {
+        			url=appendQueryParams(url, entry.getKey(), entry.getValue());
+				}
+        	}
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestMethod("GET");
             connection.setConnectTimeout(3000);
             connection.setDoInput(true);
+
+            if (headers != null && !headers.isEmpty()) {
+                for (Map.Entry<String, String> entry : headers.entrySet()) {
+                    connection.setRequestProperty(entry.getKey(), entry.getValue());
+                }
+            }
+
             InputStream is = null;
             InputStreamReader isr = null;
             BufferedReader reader = null;
             try {
                 int code = connection.getResponseCode();
-                if(code != HttpURLConnection.HTTP_OK){
+
+                if (code >= HttpURLConnection.HTTP_BAD_REQUEST) {
                     is = connection.getErrorStream();
-                }else{
-                    is = connection.getInputStream();
+                    isr = new InputStreamReader(is, "UTF-8");
+                    reader = new BufferedReader(isr);
+
+                    StringBuilder sb = new StringBuilder();
+                    do {
+                        String line = reader.readLine();
+                        if (line == null) {
+                            break;
+                        }
+                        sb.append(line);
+                    } while (true);
+
+                    throw new HttpException(code,
+                            "get request [" + url + "] error with response code [" + code + "] " +
+                                    "\nerror message: " + sb.toString());
                 }
+
+                is = connection.getInputStream();
                 isr = new InputStreamReader(is,"UTF-8");
                 reader = new BufferedReader(isr);
                 StringBuilder sb = new StringBuilder();
@@ -181,6 +221,49 @@ public class HttpClient {
             }
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    public static String appendQueryString(String url, String queryString) {
+	    if(null == url) {
+	        return url;
+	    }
+
+		int index = url.lastIndexOf('?');
+		if(index < 0) {
+			return url + "?" + queryString;
+		}else{
+			if(index == url.length() - 1) {
+				return url + queryString;
+			}else{
+				return url + "&" + queryString;
+			}
+		}
+	}
+
+	public static String appendQueryParams(String url, String name, String value) {
+	    return appendQueryString(url, name + "=" + encode(value));
+	}
+
+	public static String encode(String url) {
+	    if(null == url) {
+	        return url;
+	    }
+		try {
+	        return URLEncoder.encode(url,  "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+        	throw new RuntimeException(e);
+        }
+	}
+
+    public static String encode(String url, String charset) {
+        if(null == url) {
+            return url;
+        }
+        try {
+            return URLEncoder.encode(url, charset);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -31,39 +31,41 @@ public class SSOUtils {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String BEARER               = "Bearer";
     public static final String BASIC                = "Basic";
+    public static final String ACCESS_TOKEN_PARAM_NAME   = "access_token";
+
     public static final String POST_LOGOUT_REDIRECT_URI_PARAM = "post_logout_redirect_uri";
     /**
      * 从{@link HttpServletRequest}对象中解析accessToken，这里的accessToken是放在名为Authorization的请求头里。
-     * 
+     *
      * 如果没有名为Authorization的请求头，则返回null
-     * 
+     *
      * <p/>
      * 示例：
      * <pre>
-     *      Authorization: Bearer {accessToken}     
+     *      Authorization: Bearer {accessToken}
      * </pre>
      */
     public static String extractAccessToken(HttpServletRequest request) {
-        String header = request.getHeader(AUTHORIZATION_HEADER);
-        if(header == null || header.trim().isEmpty()){
-            return null;
+        String accessToken = request.getHeader(AUTHORIZATION_HEADER);
+        if(accessToken ==null || accessToken.trim().isEmpty()){
+        	accessToken=request.getParameter(ACCESS_TOKEN_PARAM_NAME);
+        }else{
+        	accessToken = accessToken.trim();
+            if(accessToken.startsWith(BEARER)){
+                accessToken = accessToken.substring(BEARER.length());
+                accessToken= accessToken.trim();
+            }
         }
-        header = header.trim();
-        if(header.startsWith(BEARER)){
-            header = header.substring(BEARER.length());
-            return header.trim();
-        }else {
-            return header;
-        }
+        return accessToken;
     }
 
     /**
      * 将<code>clientId</code>和<code>clientSecret</code>组合并编码成HTTP Basic authentication需要的请求头的值。
      * 参考：https://tools.ietf.org/html/rfc6749#section-2.3.1
-     * 
+     *
      * 在使用授权码获取access token的时候，需要使用HTTP Basic authentication方式验证client身份。
      * 参考：https://tools.ietf.org/html/rfc6749#section-4.1.3
-     * 
+     *
      */
     public static String encodeBasicAuthorizationHeader(String clientId, String clientSecret){
         return BASIC + " " + Base64.urlEncode(clientId+":"+clientSecret);
@@ -71,9 +73,9 @@ public class SSOUtils {
 
     /**
      * 返回单点注销地址
-     * 
+     *
      * 应用注销的时候只要直接重定向到这个地址即可单点注销
-     * 
+     *
      */
     public static String getSSOLogoutUrl(SSOClient client, String returnUrl){
         String logoutUrl = client.getConfig().getOauthLogoutEndpoint();
@@ -86,7 +88,7 @@ public class SSOUtils {
     private static String getContextPathOfReverseProxy(HttpServletRequest req){
         return req.getContextPath();
     }
-    
+
     protected SSOUtils() {}
 
 }
