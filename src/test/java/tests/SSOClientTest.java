@@ -85,6 +85,7 @@ public class SSOClientTest {
         SSOConfig config = new SSOConfig().autoConfigureUrls(baseUrl);
         config.setClientId("test");
         config.setClientSecret("test_secret");
+        config.setResourceName("resourceName");
         config.setRedirectUri("http://www.example.com");
         client = new SSOClient(config);
         
@@ -170,7 +171,7 @@ public class SSOClientTest {
         resp.put("client_id","console");
         resp.put("scope","perm");
         
-        MappingBuilder mb = get("/oauth2/tokeninfo?access_token="+accessToken)
+        MappingBuilder mb = post("/oauth2/tokeninfo")
                 .willReturn(aResponse().withStatus(200).withBody(JSON.encode(resp)));
         stubFor(mb);
         // 正常返回
@@ -189,7 +190,7 @@ public class SSOClientTest {
         Map<String, String> error = new HashMap<String, String>();
         error.put("error","invalid_token");
         error.put("error_description","无效的token");
-        mb = get("/oauth2/tokeninfo?access_token="+accessToken)
+        mb = post("/oauth2/tokeninfo")
                 .willReturn(aResponse().withStatus(400).withBody(JSON.encode(error)));
         stubFor(mb);
         boolean invalid = false;
@@ -206,8 +207,8 @@ public class SSOClientTest {
         // access token过期
         resp.remove("expires_in");
         removeStub(mb);
-        mb = get("/oauth2/tokeninfo?access_token="+accessToken)
-                .willReturn(aResponse().withStatus(400).withBody(JSON.encode(resp)));
+        mb = post("/oauth2/tokeninfo")
+                .willReturn(aResponse().withStatus(200).withBody(JSON.encode(resp)));
         stubFor(mb);
         boolean expires = false;
         authc1.setExpires(10);

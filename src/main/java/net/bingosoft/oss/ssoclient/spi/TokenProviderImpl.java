@@ -30,6 +30,7 @@ import net.bingosoft.oss.ssoclient.internal.Strings;
 import net.bingosoft.oss.ssoclient.internal.Urls;
 import net.bingosoft.oss.ssoclient.model.AccessToken;
 import net.bingosoft.oss.ssoclient.model.Authentication;
+import sun.security.krb5.internal.PAData;
 
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPublicKey;
@@ -88,9 +89,26 @@ public class TokenProviderImpl implements TokenProvider {
 
     @Override
     public Authentication verifyBearerAccessToken(String accessToken) throws InvalidTokenException, TokenExpiredException {
-        String tokeninfoUrl = Urls.appendQueryString(config.getTokenInfoEndpointUrl(),"access_token",accessToken);
-        String json = HttpClient.get(tokeninfoUrl);
-        
+        if(Strings.isEmpty(config.getResourceName())){
+            throw new IllegalStateException("resource name must not be null or empty");
+        }
+        String tokeninfoUrl = config.getTokenInfoEndpointUrl();
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("access_token",accessToken);
+        params.put("resource",config.getResourceName());
+        Map<String, String> header = new HashMap<String, String>();
+        header.put(SSOUtils.AUTHORIZATION_HEADER,SSOUtils.encodeBasicAuthorizationHeader(config.getClientId(),config.getClientSecret()));
+
+        String json = null;
+        try {
+            json = HttpClient.post(tokeninfoUrl,params,header);
+        } catch (HttpException e) {
+            if(e.getMessage().contains("invalid_token")){
+                throw new InvalidTokenException("error in obtain access token:[http code:"+e.getCode()+"] "+e.getMessage(),e);
+            }
+            throw e;
+        }
+
         Map<String, Object> tokenInfoMap = JSON.decodeToMap(json);        
         
         if(tokenInfoMap.containsKey("error")){
@@ -200,7 +218,7 @@ public class TokenProviderImpl implements TokenProvider {
         Map<String, String> params = new HashMap<String, String>();
         params.put("grant_type","token_client_credentials");
         params.put("access_token",accessToken);
-
+        
         String json = HttpClient.post(config.getTokenEndpointUrl(),params,createAuthorizationHeader());
 
         Map<String, Object> map;

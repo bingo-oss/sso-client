@@ -23,6 +23,8 @@ public class SSOConfig {
 
     protected String clientId;
     protected String clientSecret;
+    protected String resourceName;
+    
     protected String redirectUri;
     protected String publicKeyEndpointUrl;
     protected String tokenEndpointUrl;
@@ -68,6 +70,24 @@ public class SSOConfig {
 
     public void setClientSecret(String clientSecret) {
         this.clientSecret = clientSecret;
+    }
+
+    /**
+     * 返回在SSO注册的资源名称
+     * 
+     * @since 3.0.2
+     */
+    public String getResourceName() {
+        return resourceName==null?clientId:resourceName;
+    }
+
+    /**
+     * 设置在SSO注册的资源名称
+     * 
+     * @since 3.0.2
+     */
+    public void setResourceName(String resourceName) {
+        this.resourceName = resourceName;
     }
 
     /**
