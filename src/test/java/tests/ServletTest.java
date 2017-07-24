@@ -76,7 +76,7 @@ public class ServletTest {
         resp.put("expires_in","3600");
         resp.put("token_type","Bearer");
         
-        stubFor(WireMock.get("/publickey").willReturn(aResponse().withStatus(200).withBody(pk)));
+        stubFor(WireMock.get("/oauth2/publickey").willReturn(aResponse().withStatus(200).withBody(pk)));
         stubFor(post("/oauth2/token").willReturn(aResponse().withStatus(200).withBody(JSON.encode(resp))));
     }
     @Test
