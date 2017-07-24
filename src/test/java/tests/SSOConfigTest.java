@@ -35,7 +35,7 @@ public class SSOConfigTest {
         config.autoConfigureUrls(ssoBaseUrl);
         Assert.assertEquals("clientId",config.getClientId());
         Assert.assertEquals("clientSecret",config.getClientSecret());
-        Assert.assertEquals(ssoBaseUrl+"/publickey",config.getPublicKeyEndpointUrl());
+        Assert.assertEquals(ssoBaseUrl+"/oauth2/publickey",config.getPublicKeyEndpointUrl());
         Assert.assertEquals(ssoBaseUrl+"/oauth2/token",config.getTokenEndpointUrl());
         Assert.assertEquals(ssoBaseUrl+"/oauth2/authorize",config.getAuthorizationEndpointUrl());
         Assert.assertEquals(ssoBaseUrl+"/oauth2/logout",config.getOauthLogoutEndpoint());

@@ -76,7 +76,7 @@ public class SSOClientTest {
     public void before(){
         String pk = org.apache.commons.codec.binary.Base64.encodeBase64String(keyPair.getPublic().getEncoded());
         
-        stubFor(get("/publickey").willReturn(aResponse().withStatus(200).withBody(pk)));
+        stubFor(get("/oauth2/publickey").willReturn(aResponse().withStatus(200).withBody(pk)));
         
         JwtBuilder builder = jwtBuilder(System.currentTimeMillis()+3600*1000L)
                 .signWith(SignatureAlgorithm.RS256,keyPair.getPrivate());
