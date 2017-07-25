@@ -63,11 +63,11 @@ public class TokenProviderImpl implements TokenProvider {
 
         //验证通过
         Authentication authentication = createAuthcFromMap(map);
-        
+
         if(authentication.isExpired()){
             throw new TokenExpiredException(accessToken);
         }
-        
+
         return authentication;
     }
 
@@ -85,7 +85,7 @@ public class TokenProviderImpl implements TokenProvider {
         return authentication;
     }
 
-    
+
 
     @Override
     public Authentication verifyBearerAccessToken(String accessToken) throws InvalidTokenException, TokenExpiredException {
@@ -109,12 +109,12 @@ public class TokenProviderImpl implements TokenProvider {
             throw e;
         }
 
-        Map<String, Object> tokenInfoMap = JSON.decodeToMap(json);        
-        
+        Map<String, Object> tokenInfoMap = JSON.decodeToMap(json);
+
         if(tokenInfoMap.containsKey("error")){
             throw new InvalidTokenException(tokenInfoMap.get("error")+":"+tokenInfoMap.get("error_description"));
         }
-        
+
         Authentication authc = new Authentication();
         authc.setUserId((String) tokenInfoMap.remove("user_id"));
         authc.setClientId((String)tokenInfoMap.remove("client_id"));
@@ -125,17 +125,17 @@ public class TokenProviderImpl implements TokenProvider {
             expiresIn = "0";
         }
         authc.setExpires(System.currentTimeMillis()/1000L+Integer.parseInt(expiresIn));
-        
+
         if(authc.isExpired()){
             throw new TokenExpiredException("token is expired:"+accessToken);
         }
-        
+
         return authc;
     }
-    
+
     @Override
     public AccessToken obtainAccessTokenByAuthzCode(String authzCode) throws InvalidCodeException, TokenExpiredException{
-        
+
         Map<String, String> params = new HashMap<String, String>();
         params.put("grant_type","authorization_code");
         params.put("code",authzCode);
@@ -159,16 +159,16 @@ public class TokenProviderImpl implements TokenProvider {
         }
 
         AccessToken token = createAccessTokenFromMap(map);
-        
+
         if(null == token.getAccessToken() || token.getAccessToken().isEmpty()){
-            throw new InvalidCodeException("invalid authorization code["+authzCode+"]:" + 
+            throw new InvalidCodeException("invalid authorization code["+authzCode+"]:" +
                     map.get("error") + "\n" + map.get("error_description"));
         }
-        
+
         if(token.isExpired()){
             throw new TokenExpiredException("access token obtain by authorization code " +authzCode+ " is expired!");
         }
-        
+
         return token;
     }
 
@@ -195,14 +195,14 @@ public class TokenProviderImpl implements TokenProvider {
         if(token.isExpired()){
             throw new TokenExpiredException("access token obtain by client secret is expired!");
         }
-        
+
         return token;
     }
 
     @Override
     public AccessToken obtainAccessTokenByClientCredentialsWithJwtToken(
             String accessToken) throws InvalidTokenException, TokenExpiredException {
-        
+
         verifyJwtAccessToken(accessToken);
 
         return obtainAccessTokenByTokenClientCredentials(accessToken);
@@ -218,7 +218,7 @@ public class TokenProviderImpl implements TokenProvider {
         Map<String, String> params = new HashMap<String, String>();
         params.put("grant_type","token_client_credentials");
         params.put("access_token",accessToken);
-        
+
         String json = HttpClient.post(config.getTokenEndpointUrl(),params,createAuthorizationHeader());
 
         Map<String, Object> map;
@@ -294,7 +294,7 @@ public class TokenProviderImpl implements TokenProvider {
             throw new RuntimeException("Decode public key error", e);
         }
     }
-    
+
     protected Authentication createAuthcFromMap(Map<String, Object> map){
         Authentication authentication = new Authentication();
         authentication.setUserId((String)map.remove("user_id"));
@@ -324,7 +324,7 @@ public class TokenProviderImpl implements TokenProvider {
         }
         return authentication;
     }
-    
+
     protected AccessToken createAccessTokenFromMap(Map<String, Object> map){
         AccessToken token = new AccessToken();
         token.setAccessToken((String)map.remove("access_token"));
@@ -334,7 +334,7 @@ public class TokenProviderImpl implements TokenProvider {
         token.setExpiresInFromNow(expiresIn==null?0:Integer.parseInt(expiresIn));
         return token;
     }
-    
+
     protected Map<String, String> createAuthorizationHeader(){
         Map<String, String> header = new HashMap<String, String>();
         String h = SSOUtils.encodeBasicAuthorizationHeader(config.getClientId(),config.getClientSecret());

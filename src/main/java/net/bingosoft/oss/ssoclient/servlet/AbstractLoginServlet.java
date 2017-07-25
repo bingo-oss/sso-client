@@ -19,12 +19,12 @@ import java.util.UUID;
  * @since 3.0.1
  */
 public abstract class AbstractLoginServlet extends HttpServlet{
-    
+
     protected static final String ID_TOKEN_PARAM                 = "id_token";
     protected static final String AUTHZ_CODE_PARAM               = "code";
-    
+
     private SSOClient client;
-    
+
     @Override
     public void init(ServletConfig config) throws ServletException {
         this.client = getClient(config);
@@ -48,9 +48,9 @@ public abstract class AbstractLoginServlet extends HttpServlet{
     protected void redirectToSSOLogin(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String redirectUri = buildRedirectUri(req,resp);
         String loginUrl = buildLoginUrl(req,resp,redirectUri);
-        
+
         resp.sendRedirect(loginUrl);
-        
+
     }
 
     protected void gotoLocalLogin(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
@@ -78,12 +78,12 @@ public abstract class AbstractLoginServlet extends HttpServlet{
 
     /**
      * OAuth登录过程需要校验<code>state</code>参数是否变化。
-     * 
+     *
      * 默认情况下这个<code>state</code>是调整到SSO登录时生成的随机码，如果这个状态被改变说明请求可能被篡改。
-     * 
+     *
      * 校验通过返回<code>true</code>，不通过返回false。
-     * 
-     * @see #setOauth2LoginState(HttpServletRequest, HttpServletResponse, String) 
+     *
+     * @see #setOauth2LoginState(HttpServletRequest, HttpServletResponse, String)
      */
     protected boolean checkOauth2LoginState(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String state = req.getParameter("state");
@@ -96,10 +96,10 @@ public abstract class AbstractLoginServlet extends HttpServlet{
 
     /**
      * 设置跳转到登录页面时的<code>state</code>参数。
-     * 
+     *
      * 默认生成一串随机{@link UUID},并去掉'-'符号作为<code>state</code>。
-     * 
-     * @see #checkOauth2LoginState(HttpServletRequest, HttpServletResponse) 
+     *
+     * @see #checkOauth2LoginState(HttpServletRequest, HttpServletResponse)
      */
     protected String setOauth2LoginState(HttpServletRequest req, HttpServletResponse resp, String authzEndpoint){
         String state = UUID.randomUUID().toString().replace("-","");
@@ -107,7 +107,7 @@ public abstract class AbstractLoginServlet extends HttpServlet{
         authzEndpoint = Urls.appendQueryString(authzEndpoint,"state",state);
         return authzEndpoint;
     }
-    
+
     protected String buildLoginUrl(HttpServletRequest req, HttpServletResponse resp, String redirectUri) {
         String authzEndpoint = client.getConfig().getAuthorizationEndpointUrl();
         authzEndpoint = Urls.appendQueryString(authzEndpoint,"response_type","code id_token");
@@ -116,27 +116,27 @@ public abstract class AbstractLoginServlet extends HttpServlet{
         authzEndpoint = setOauth2LoginState(req,resp,authzEndpoint);
         return authzEndpoint;
     }
-    
+
     /**
      * 构造SSO登录完成后的回调url，一般情况下，在注册SSO应用的时候，需要保证这个uri可以通过SSO的验证。
      * 这个方法构造的url一般是如下格式：
-     * 
+     *
      * <pre>
      *     http(s)://${domain}:${port}/${contextPath}/ssoclient/login?${queryString}
      *     示例：
      *     http://www.example.com:80/demo/ssoclient/login?name=admin
      * </pre>
-     * 
+     *
      * 一般情况下要求注册client的时候，填写的回调地址(redirect_uri)必须能够验证这里构造的url实现自动完成登录的过程。
-     * 
+     *
      * 如果由于其他原因，回调地址不能设置为匹配这个地址的表达式，请重写这个方法，并自己处理登录完成后的回调请求。
      */
     protected String buildRedirectUri(HttpServletRequest req, HttpServletResponse resp){
         String baseUrl = Urls.getServerBaseUrl(req);
-        
+
         String requestUri = parseRequestUriWithoutContextPath(req);
         String current = baseUrl + getContextPathOfReverseProxy(req) + requestUri;
-        
+
         String queryString = req.getQueryString();
         if(Strings.isEmpty(queryString)){
             return current;
@@ -158,7 +158,7 @@ public abstract class AbstractLoginServlet extends HttpServlet{
             return "/"+requestUri;
         }
     }
-    
+
     /**
      * 获取请求访问的uri，默认情况下是<code>req.getContextPath()</code>
      * 如果这个应用是通过反向代理（如：网关）的话，这里的返回值就不一定正确，此时需要重写这个方法。
@@ -175,15 +175,15 @@ public abstract class AbstractLoginServlet extends HttpServlet{
     protected String getContextPathOfReverseProxy(HttpServletRequest req){
         return req.getContextPath();
     }
-    
+
     protected boolean isRedirectedFromSSO(HttpServletRequest req){
         String idToken = req.getParameter(ID_TOKEN_PARAM);
         String accessToken = req.getParameter(AUTHZ_CODE_PARAM);
         return !Strings.isEmpty(idToken) && !Strings.isEmpty(accessToken);
     }
-    
-    
-    
+
+
+
     /**
      * 返回一个{@link SSOClient}对象
      */
