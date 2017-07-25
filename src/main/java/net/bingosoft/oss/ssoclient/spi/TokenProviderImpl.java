@@ -238,7 +238,39 @@ public class TokenProviderImpl implements TokenProvider {
 
         return token;
     }
-    
+
+    @Override
+    public AccessToken refreshAccessToken(AccessToken accessToken) throws InvalidTokenException, TokenExpiredException {
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("grant_type","refresh_token");
+        params.put("refresh_token",accessToken.getRefreshToken());
+
+        String json = null;
+        try {
+            json = HttpClient.post(config.getTokenEndpointUrl(),params,createAuthorizationHeader());
+        } catch (HttpException e) {
+            String msg = e.getMessage();
+            throw new InvalidTokenException(msg,e);
+        }
+
+        Map<String, Object> map;
+        try {
+            map = JSON.decodeToMap(json);
+        } catch (Exception e) {
+            throw new RuntimeException("parse json error",e);
+        }
+        if(map.containsKey("error")){
+            throw new InvalidTokenException("invalid token:"+map.get("error_description"));
+        }
+        AccessToken token = createAccessTokenFromMap(map);
+
+        if(token.isExpired()){
+            throw new TokenExpiredException("refresh token is expired!");
+        }
+
+        return token;
+    }
+
     protected Map<String,Object> retryVerify(String accessToken) {
         //先刷新public key
         refreshPublicKey();

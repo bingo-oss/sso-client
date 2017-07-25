@@ -174,6 +174,20 @@ public class SSOClient {
         return token;
     }
 
+    /**
+     * 使用<code>accessToken</code>中所带的refreshToken获取一个新的access token，
+     *
+     * 新的accessToken包含的信息和传入的accessToken一致
+     *
+     * @throws InvalidTokenException 如果传入的accessToken所带的refreshToken是无效的
+     * @throws TokenExpiredException 如果传入的accessToken所带的refreshToken已经过期
+     *
+     * @since 3.0.3
+     */
+    public AccessToken refreshAccessToken(AccessToken accessToken) throws InvalidTokenException, TokenExpiredException{
+        return tp().refreshAccessToken(accessToken);
+    }
+    
     protected AccessToken getAccessTokenFromCache(String key){
         CacheProvider cp = cp();
         AccessToken token = cp.get(key);

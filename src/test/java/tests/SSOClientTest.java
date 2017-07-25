@@ -617,6 +617,57 @@ public class SSOClientTest {
         Assert.assertTrue(invalid);
     }
     
+    @Test
+    public void testRefreshToken(){
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("grant_type","token_client_credentials");
+
+        Map<String, String> resp = new HashMap<String, String>();
+        resp.put("access_token","accesstoken");
+        resp.put("refresh_token","refreshtoken");
+        resp.put("expires_in","3600");
+        resp.put("token_type","Bearer");
+
+        Map<String, String> error = new HashMap<String, String>();
+        error.put("error","invalid_grant");
+        error.put("error_description","client_secret invalid");
+        
+        // 正常获取
+        MappingBuilder mb = post("/oauth2/token").withPostServeAction("postParams",params)
+                .withHeader("Authorization", equalTo(basicHeader))
+                .willReturn(aResponse().withStatus(200).withBody(JSON.encode(resp)));
+        stubFor(mb);
+        AccessToken at = client.obtainAccessTokenByClientCredentials();
+        assertAccessToken(at);
+        // 正常刷新
+        removeStub(mb);
+        resp.put("access_token","accesstoken1");
+        resp.put("refresh_token","refreshtoken1");
+        resp.put("expires_in","3600");
+        resp.put("token_type","Bearer");
+        mb.willReturn(aResponse().withStatus(200).withBody(JSON.encode(resp)));
+        stubFor(mb);
+        AccessToken at1 = client.refreshAccessToken(at);
+        Assert.assertEquals("accesstoken1",at1.getAccessToken());
+        Assert.assertEquals("refreshtoken1",at1.getRefreshToken());
+        Assert.assertEquals("Bearer",at1.getTokenType());
+        Assert.assertEquals(3600,at1.getExpires()-System.currentTimeMillis()/1000L);
+        
+        // 刷新异常
+        removeStub(mb);
+        mb.willReturn(aResponse().withStatus(401).withBody(JSON.encode(error)));
+        stubFor(mb);
+        boolean invalid = false;
+        try {
+            client.refreshAccessToken(at);
+        } catch (InvalidTokenException e) {
+            invalid = true;
+        } catch (TokenExpiredException e) {
+            e.printStackTrace();
+        }
+        Assert.assertTrue(invalid);
+    }
+    
     protected void assertAuthc(Authentication authc){
         Assert.assertEquals("43FE6476-CD7B-493B-8044-C7E3149D0876", authc.getUserId());
         Assert.assertEquals("admin", authc.getUsername());
@@ -722,6 +773,13 @@ public class SSOClientTest {
                 used.put("obtainAccessTokenByClientCredentialsWithBearerToken",true);
                 return new AccessToken();
             }
+
+            @Override
+            public AccessToken refreshAccessToken(
+                    AccessToken accessToken) throws InvalidTokenException, TokenExpiredException {
+                used.put("refreshAccessToken",true);
+                return new AccessToken();
+            }
         };
         client.setTokenProvider(provider);
         Assert.assertTrue(provider == client.getTokenProvider());
@@ -732,6 +790,7 @@ public class SSOClientTest {
         client.obtainAccessTokenByClientCredentials();
         client.obtainAccessTokenByToken(jwtToken);
         client.obtainAccessTokenByToken(UUID.randomUUID().toString());
+        client.refreshAccessToken(new AccessToken());
         Assert.assertTrue(used.get("verifyJwtAccessToken"));
         Assert.assertTrue(used.get("verifyBearerAccessToken"));
         Assert.assertTrue(used.get("verifyIdToken"));
@@ -739,6 +798,7 @@ public class SSOClientTest {
         Assert.assertTrue(used.get("obtainAccessTokenByClientCredentials"));
         Assert.assertTrue(used.get("obtainAccessTokenByClientCredentialsWithJwtToken"));
         Assert.assertTrue(used.get("obtainAccessTokenByClientCredentialsWithBearerToken"));
+        Assert.assertTrue(used.get("refreshAccessToken"));
     }
     
     protected JwtBuilder jwtBuilder(long exp, Map<String, Object> ext){
