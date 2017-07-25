@@ -45,12 +45,12 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 public class SSOClientTest {
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(9999);
-
+    
     private static final String baseUrl = "http://localhost:9999/";
     private SSOClient client;
-
+    
     private KeyPair keyPair = RsaProvider.generateKeyPair();
-
+    
     String jwtToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9." +
             "eyJjbGllbnRfaWQiOiJjb25zb2xlIiwidXNlcl9pZCI6IjQ" +
             "zRkU2NDc2LUNEN0ItNDkzQi04MDQ0LUM3RTMxNDlEMDg3Ni" +
@@ -61,17 +61,17 @@ public class SSOClientTest {
             "kJWc8FEXZEn3kICByb2W9PivouRc5l2_9N4dVXyEH1s2k17" +
             "Jp9aAWU7AFEWwtjdRQe7UIjCxock--FOUzuUKZhrI1tgeVH" +
             "P4p-NNnkh-at43NxEI63HLOKvCo67R3QgK3wrg";
-
+    
     String idToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9." +
             "eyJhdWQiOiJ0ZXN0Iiwic3ViIjoiNWYxOWY3ZTgtODkwYS" +
             "00NDcxLTliZDEtNzllMTc5MWVlOTU3IiwiZXhwIjoxNDky" +
             "Njc3MTE1LCJuYW1lIjoiYWRtaW4iLCJsb2dpbl9uYW1lIj" +
             "oiYWRtaW4ifQ.GzENvWVdmgknI5eerApk8DupOxCyz3hsL" +
             "QCTVEFfvT8";
-
+    
     String authCode = UUID.randomUUID().toString().replace("-","");
     String basicHeader;
-
+    
     @Before
     public void before(){
         String pk = org.apache.commons.codec.binary.Base64.encodeBase64String(keyPair.getPublic().getEncoded());
@@ -668,7 +668,6 @@ public class SSOClientTest {
         Assert.assertTrue(invalid);
     }
     
-
     protected void assertAuthc(Authentication authc){
         Assert.assertEquals("43FE6476-CD7B-493B-8044-C7E3149D0876", authc.getUserId());
         Assert.assertEquals("admin", authc.getUsername());
@@ -791,6 +790,7 @@ public class SSOClientTest {
         client.obtainAccessTokenByClientCredentials();
         client.obtainAccessTokenByToken(jwtToken);
         client.obtainAccessTokenByToken(UUID.randomUUID().toString());
+        client.refreshAccessToken(new AccessToken());
         Assert.assertTrue(used.get("verifyJwtAccessToken"));
         Assert.assertTrue(used.get("verifyBearerAccessToken"));
         Assert.assertTrue(used.get("verifyIdToken"));
@@ -798,6 +798,7 @@ public class SSOClientTest {
         Assert.assertTrue(used.get("obtainAccessTokenByClientCredentials"));
         Assert.assertTrue(used.get("obtainAccessTokenByClientCredentialsWithJwtToken"));
         Assert.assertTrue(used.get("obtainAccessTokenByClientCredentialsWithBearerToken"));
+        Assert.assertTrue(used.get("refreshAccessToken"));
     }
 
     protected JwtBuilder jwtBuilder(long exp, Map<String, Object> ext){
