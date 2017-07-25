@@ -216,6 +216,29 @@ AccessToken clientAndUser = client.obtainAccessTokenByToken(accessToken);
 这里`accessToken`代表的是用户身份，`clientAndUser`代表的是用户身份和client的身份。
 使用`clientAndUser`这个访问令牌就可以调用另一个服务了。
 
+### 5. 刷新访问令牌
+
+获取访问令牌之后，可能需要观察访问令牌的过期时间。可以按照如下方式判断访问令牌是否过期：
+
+```java
+AccessToken at;
+// 省略at获取的过程。
+if(at.isExpired()){
+    // 访问令牌过期
+}else {
+    // 访问令牌未过期
+}
+```
+
+如果访问令牌已经过期了，这个令牌就不能再用了，需要刷新访问令牌：
+
+```java
+if(at.isExpired()){
+    // 这里获取到的访问令牌是全新的访问令牌，因此需要重新赋值。
+    at = client.refreshAccessToken(at);
+}
+```
+
 ## 扩展
 
 ### 自定义缓存

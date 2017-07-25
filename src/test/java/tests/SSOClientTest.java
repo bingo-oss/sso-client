@@ -639,6 +639,9 @@ public class SSOClientTest {
         stubFor(mb);
         AccessToken at = client.obtainAccessTokenByClientCredentials();
         assertAccessToken(at);
+        
+        
+        
         // 正常刷新
         removeStub(mb);
         resp.put("access_token","accesstoken1");
