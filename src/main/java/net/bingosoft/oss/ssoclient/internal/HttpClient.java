@@ -18,6 +18,10 @@ package net.bingosoft.oss.ssoclient.internal;
 
 import net.bingosoft.oss.ssoclient.exception.HttpException;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -29,6 +33,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.security.cert.X509Certificate;
 import java.util.Map;
 
 
@@ -56,7 +61,6 @@ public class HttpClient {
             connection.setRequestMethod("GET");
             connection.setConnectTimeout(3000);
             connection.setDoInput(true);
-
             if (headers != null && !headers.isEmpty()) {
                 for (Map.Entry<String, String> entry : headers.entrySet()) {
                     connection.setRequestProperty(entry.getKey(), entry.getValue());
@@ -264,6 +268,33 @@ public class HttpClient {
             return URLEncoder.encode(url, charset);
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
+        }
+    }
+    
+    public static void ignoreHttpsCer(){
+        // Create a trust manager that does not validate certificate chains  
+        TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+
+            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                return new java.security.cert.X509Certificate[] {};
+            }
+
+            public void checkClientTrusted(X509Certificate[] chain, String authType)  {
+
+            }
+
+            public void checkServerTrusted(X509Certificate[] chain, String authType) {
+
+            }
+        } };
+
+        // Install the all-trusting trust manager  
+        try {
+            SSLContext sc = SSLContext.getInstance("TLS");
+            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
