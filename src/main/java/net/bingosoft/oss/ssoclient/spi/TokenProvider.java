@@ -58,4 +58,11 @@ public interface TokenProvider {
      * @since 3.0.1
      */
     AccessToken obtainAccessTokenByClientCredentialsWithBearerToken(String accessToken) throws InvalidTokenException, TokenExpiredException;
+    
+    /**
+     * 刷新accessToken
+     *
+     * @since 3.0.3
+     */
+    AccessToken refreshAccessToken(AccessToken accessToken) throws InvalidTokenException, TokenExpiredException;
 }
