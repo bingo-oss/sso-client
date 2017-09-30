@@ -64,7 +64,7 @@ public class Urls {
             schema=request.getScheme();
         }
         schema+="://";
-        String host =request.getHeader("host");
+        String host =request.getHeader("x-forwarded-host");
         if(host==null || "".equals(host)){
             host=request.getServerName() + ":" + request.getServerPort();
         }
