@@ -314,3 +314,7 @@ http://www.example.com:80/demo/ssoclient/**
 * 设置`x-forwarded-proto`请求头为访问协议(http或https)
 * 根据代理后的contextPath重写`AbstractLoginServlet.getContextPathOfReverseProxy(req)`方法
 
+**问：配置负载均衡后，为什么登录过程不停在sso和应用之间重定向导致重定向次数过多？**
+
+答：使用负载均衡后，由于从sso重定向回来的请求不一定能转发到最初请求登录的节点，因此需要启用粘性cookie，即保证登录请求从sso重定向回来之后可以回到最初
+请求登录的节点。
