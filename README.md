@@ -7,6 +7,7 @@
 ## 版本说明
 
 |版本|说明|
+|----|----|
 |3.0.4|兼容旧版本SSO（3.1.x）的scope使用`,`号分隔和新版本使用` `分隔的情况，新版本SSO（3.2.0）返回的scope以空格分隔，`Authentication.getScope()`会全部替换成`,`分隔|
 |3.1.0|对接新版本SSO（3.2.0），`Authentication.getScope()`返回的scope以` `分隔|
 
