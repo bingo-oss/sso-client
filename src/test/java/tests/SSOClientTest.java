@@ -169,7 +169,7 @@ public class SSOClientTest {
         resp.put("username","admin");
         resp.put("expires_in","3600");
         resp.put("client_id","console");
-        resp.put("scope","perm");
+        resp.put("scope","perm name,user");
 
         MappingBuilder mb = post("/oauth2/tokeninfo")
                 .willReturn(aResponse().withStatus(200).withBody(JSON.encode(resp)));
@@ -674,7 +674,7 @@ public class SSOClientTest {
     protected void assertAuthc(Authentication authc){
         Assert.assertEquals("43FE6476-CD7B-493B-8044-C7E3149D0876", authc.getUserId());
         Assert.assertEquals("admin", authc.getUsername());
-        Assert.assertEquals("perm", authc.getScope());
+        Assert.assertEquals("perm,name,user", authc.getScope());
         Assert.assertEquals("console", authc.getClientId());
     }
 
@@ -807,7 +807,8 @@ public class SSOClientTest {
     protected JwtBuilder jwtBuilder(long exp, Map<String, Object> ext){
         JwtBuilder jwt = Jwts.builder()
                 .claim("user_id","43FE6476-CD7B-493B-8044-C7E3149D0876")
-                .claim("scope","perm")
+                // 逗号和空格分隔
+                .claim("scope","perm name,user")
                 .claim("client_id","console")
                 .claim("username","admin");
         if(ext != null){

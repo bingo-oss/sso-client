@@ -119,7 +119,13 @@ public class TokenProviderImpl implements TokenProvider {
         authc.setUserId((String) tokenInfoMap.remove("user_id"));
         authc.setClientId((String)tokenInfoMap.remove("client_id"));
         authc.setUsername((String)tokenInfoMap.remove("username"));
-        authc.setScope((String)tokenInfoMap.remove("scope"));
+        
+        String scope = (String)tokenInfoMap.remove("scope");
+        // 新版本sso返回的scope以空格分隔，旧版本的scope以逗号分隔，sdk向前兼容，将新版sso的scope分隔符替换为逗号，向前兼容
+        if(!Strings.isEmpty(scope)){
+            scope = scope.replaceAll(" ",",");
+        }
+        authc.setScope(scope);
         String expiresIn = Strings.nullOrToString(tokenInfoMap.remove("expires_in"));
         if(null == expiresIn){
             expiresIn = "0";
@@ -300,7 +306,13 @@ public class TokenProviderImpl implements TokenProvider {
         authentication.setUserId((String)map.remove("user_id"));
         authentication.setUsername((String)map.remove("username"));
         authentication.setClientId((String)map.remove("client_id"));
-        authentication.setScope((String)map.remove("scope"));
+        
+        String scope = (String)map.remove("scope");
+        // 新版本sso返回的scope以空格分隔，旧版本的scope以逗号分隔，sdk向前兼容，将新版sso的scope分隔符替换为逗号，向前兼容
+        if(!Strings.isEmpty(scope)){
+            scope = scope.replaceAll(" ",",");
+        }
+        authentication.setScope(scope);
 
         String expires = Strings.nullOrToString(map.remove("exp"));
         authentication.setExpires(expires == null ? 0 : Long.parseLong(expires));
@@ -315,7 +327,13 @@ public class TokenProviderImpl implements TokenProvider {
         authentication.setUserId((String)map.remove("sub"));
         authentication.setUsername((String)map.remove("login_name"));
         authentication.setClientId((String)map.remove("aud"));
-        authentication.setScope((String)map.remove("scope"));
+
+        String scope = (String)map.remove("scope");
+        // 新版本sso返回的scope以空格分隔，旧版本的scope以逗号分隔，sdk向前兼容，将新版sso的scope分隔符替换为逗号，向前兼容
+        if(!Strings.isEmpty(scope)){
+            scope = scope.replaceAll(" ",",");
+        }
+        authentication.setScope(scope);
 
         String expires = Strings.nullOrToString(map.remove("exp"));
         authentication.setExpires(expires == null ? 0 : Long.parseLong(expires));
