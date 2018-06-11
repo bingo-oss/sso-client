@@ -16,10 +16,13 @@
 
 package net.bingosoft.oss.ssoclient.model;
 
+import java.io.Serializable;
+
 /**
  * @since 3.0.1
  */
-public class AccessToken {
+public class AccessToken implements Serializable {
+    private static final long serialVersionUID = -6043645669081209490L;
     private String accessToken;
     private String refreshToken;
     private String tokenType;
