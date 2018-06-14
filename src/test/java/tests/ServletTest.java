@@ -3,7 +3,6 @@ package tests;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.meterware.httpunit.GetMethodWebRequest;
-import com.meterware.httpunit.PostMethodWebRequest;
 import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
 import com.meterware.servletunit.ServletRunner;
@@ -19,7 +18,6 @@ import net.bingosoft.oss.ssoclient.internal.Urls;
 import net.bingosoft.oss.ssoclient.model.AccessToken;
 import net.bingosoft.oss.ssoclient.model.Authentication;
 import net.bingosoft.oss.ssoclient.servlet.AbstractLoginServlet;
-import net.bingosoft.oss.ssoclient.servlet.AbstractLogoutServlet;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,12 +35,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.junit.Assert.*;
 
 public class ServletTest {
     @Rule

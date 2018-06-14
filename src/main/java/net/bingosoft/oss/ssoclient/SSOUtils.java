@@ -21,7 +21,6 @@ import net.bingosoft.oss.ssoclient.internal.Strings;
 import net.bingosoft.oss.ssoclient.internal.Urls;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * 工具类。

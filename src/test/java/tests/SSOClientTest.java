@@ -18,11 +18,7 @@ import net.bingosoft.oss.ssoclient.model.AccessToken;
 import net.bingosoft.oss.ssoclient.model.Authentication;
 import net.bingosoft.oss.ssoclient.spi.CacheProvider;
 import net.bingosoft.oss.ssoclient.spi.TokenProvider;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.UnsupportedEncodingException;
 import java.security.KeyPair;
@@ -32,12 +28,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.removeStub;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 /**
  * Created by kael on 2017/4/17.

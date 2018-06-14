@@ -3,7 +3,6 @@ package tests;
 import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import net.bingosoft.oss.ssoclient.internal.HttpClient;
-import org.apache.http.protocol.HTTP;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -11,13 +10,8 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 /**
  * @author kael.
