@@ -67,6 +67,9 @@ config.setRedirectUri(redirectUri);
 // 根据SSO地址自动配置其他地址
 config.autoConfigureUrls("http://sso.example.com");
 
+// 3.0.5-SNAPSHOT版本开始，增加登录时设置注销地址功能
+config.setLogoutUri("http://localhost:8080/logout");
+
 // 创建client对象
 SSOClient client = new SSOClient(config);
 ```
