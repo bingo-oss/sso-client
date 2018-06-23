@@ -24,6 +24,7 @@ public class SSOConfig {
     protected String clientId;
     protected String clientSecret;
     protected String resourceName;
+    protected String logoutUri;
     
     protected String redirectUri;
     protected String publicKeyEndpointUrl;
@@ -88,6 +89,24 @@ public class SSOConfig {
      */
     public void setResourceName(String resourceName) {
         this.resourceName = resourceName;
+    }
+
+    /**
+     * 返回本应用的注销地址，在进行登录时传递，注销时会调用这个地址对本地进行注销，不设置的情况下，注销时根据注册的应用中填写的注销地址调用
+     * 
+     * @since 3.0.5
+     */
+    public String getLogoutUri() {
+        return logoutUri;
+    }
+
+    /**
+     * 设置应用注销地址
+     * 
+     * @since 3.0.5
+     */
+    public void setLogoutUri(String logoutUri) {
+        this.logoutUri = logoutUri;
     }
 
     /**

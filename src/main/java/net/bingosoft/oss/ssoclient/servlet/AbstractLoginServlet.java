@@ -113,6 +113,9 @@ public abstract class AbstractLoginServlet extends HttpServlet{
         authzEndpoint = Urls.appendQueryString(authzEndpoint,"response_type","code id_token");
         authzEndpoint = Urls.appendQueryString(authzEndpoint,"client_id",client.getConfig().getClientId());
         authzEndpoint = Urls.appendQueryString(authzEndpoint,"redirect_uri",redirectUri);
+        if(!Strings.isEmpty(client.getConfig().getLogoutUri())){
+            authzEndpoint = Urls.appendQueryString(authzEndpoint,"logout_uri",client.getConfig().getLogoutUri());
+        }
         if(!Strings.isEmpty(req.getParameter("login_token"))){
             authzEndpoint = Urls.appendQueryString(authzEndpoint,"login_token",req.getParameter("login_token"));
         }
