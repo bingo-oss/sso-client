@@ -10,6 +10,7 @@
 |----|----|
 |3.0.4|兼容旧版本SSO（3.1.x）的scope使用`,`号分隔和新版本使用` `分隔的情况，新版本SSO（3.2.0）返回的scope以空格分隔，`Authentication.getScope()`会全部替换成`,`分隔|
 |3.1.0|对接新版本SSO（3.2.0），`Authentication.getScope()`返回的scope以` `分隔|
+|3.1.1|对接新版本SSO（3.2.0），`SSOConfig.getDefaultReturnUrl()`返回默认的登录后回调地址|
 
 ## 安装
 **Maven**
@@ -69,6 +70,8 @@ config.autoConfigureUrls("http://sso.example.com");
 
 // 3.0.5-SNAPSHOT版本开始，增加登录时设置注销地址功能
 config.setLogoutUri("http://localhost:8080/logout");
+// 3.1.1-SNAPSHOT版本开始支持，增加设置默认的回调地址
+config.setDefaultReturnUrl("http://localhost:8080/return_url");
 
 // 创建client对象
 SSOClient client = new SSOClient(config);
@@ -328,3 +331,16 @@ http://www.example.com:80/demo/ssoclient/**
 
 答：使用负载均衡后，由于从sso重定向回来的请求不一定能转发到最初请求登录的节点，因此需要启用粘性cookie，即保证登录请求从sso重定向回来之后可以回到最初
 请求登录的节点。
+
+**问：如何设置登陆后重定向到哪个地址？**
+
+答：一般情况下，需要在重定向到`/ssoclient/login`这个url时指定，如：
+
+```
+response.sendRedirect(req.getContextPath()+"/ssoclient/login?return_url=http%3A%2F%2Flocalhost%3A8080%2Freturn_url")
+```
+
+> 这里`return_url`参数需要以queryString方式传递，并且需要进行url编码。
+
+如果无法重定向到`/ssoclient/login`时指定，3.1.1-SNAPSHOT版本后也可以通过配置`config.setDefaultReturnUrl("http://localhost:8080/return_url");`
+的方式指定默认的重定向地址。
