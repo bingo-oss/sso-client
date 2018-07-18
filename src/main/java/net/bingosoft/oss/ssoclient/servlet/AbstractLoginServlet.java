@@ -145,9 +145,18 @@ public abstract class AbstractLoginServlet extends HttpServlet{
 
         String queryString = req.getQueryString();
         if(Strings.isEmpty(queryString)){
+            if(client.getConfig().getDefaultReturnUrl() != null && !client.getConfig().getDefaultReturnUrl().isEmpty()){
+                current = Urls.appendQueryString(current,"return_url",client.getConfig().getDefaultReturnUrl());
+            }
             return current;
         }else {
-            return current+"?"+queryString;
+            current = current+"?"+queryString;
+            if(!Urls.parseQueryString(current).containsKey("return_url")){
+                if(client.getConfig().getDefaultReturnUrl() != null && !client.getConfig().getDefaultReturnUrl().isEmpty()){
+                    current = Urls.appendQueryString(current,"return_url",client.getConfig().getDefaultReturnUrl());
+                }
+            }
+            return current;
         }
     }
 

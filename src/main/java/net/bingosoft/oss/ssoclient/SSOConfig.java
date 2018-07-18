@@ -25,6 +25,7 @@ public class SSOConfig {
     protected String clientSecret;
     protected String resourceName;
     protected String logoutUri;
+    protected String defaultReturnUrl;
     
     protected String redirectUri;
     protected String publicKeyEndpointUrl;
@@ -109,6 +110,25 @@ public class SSOConfig {
         this.logoutUri = logoutUri;
     }
 
+    /**
+     * 获取默认回调地址，如果在重定向到/ssoclient/login时没有传递return_url参数
+     * 则使用这个回调地址作为登录完成后重新打开的地址
+     * 
+     * @since 3.1.1
+     */
+    public String getDefaultReturnUrl() {
+        return defaultReturnUrl;
+    }
+    /**
+     * 设置默认回调地址，如果在重定向到/ssoclient/login时没有传递return_url参数
+     * 则使用这个回调地址作为登录完成后重新打开的地址
+     *
+     * @since 3.1.1
+     */
+    public void setDefaultReturnUrl(String defaultReturnUrl) {
+        this.defaultReturnUrl = defaultReturnUrl;
+    }
+    
     /**
      * 返回应用的回调地址(redirect_uri)
      * 
