@@ -17,6 +17,7 @@
 package net.bingosoft.oss.ssoclient.internal;
 
 import net.bingosoft.oss.ssoclient.exception.InvalidTokenException;
+import net.bingosoft.oss.ssoclient.exception.TokenExpiredException;
 
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
@@ -114,7 +115,7 @@ public class JWT {
         return sb.toString();
     }
     
-    private static Map<String, Object> verify(String token, Verifier verifier) throws InvalidTokenException{
+    private static Map<String, Object> verify(String token, Verifier verifier) throws InvalidTokenException, TokenExpiredException {
         String[] parts = token.split("\\.");
         if(parts.length != 3) {
             throw new InvalidTokenException("Invalid jwt: length of parts expect 3 but actual "+parts.length+", token:"+token);
@@ -127,7 +128,18 @@ public class JWT {
         if(verifier.verifySignature(content,payload,signature)){
             try{
                 String json = new String(Base64.urlDecode(payload), UTF_8);
-                return JSON.decodeToMap(json);
+                Map<String, Object> map = JSON.decodeToMap(json);
+                if(null != map.get("exp")){
+                    try {
+                        Long exp = Long.parseLong(map.get("exp").toString());
+                        if((System.currentTimeMillis()/1000) >= exp){
+                            throw new TokenExpiredException("jwt is expired!");
+                        }
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                    }
+                }
+                return map;
             }catch(UnsupportedEncodingException e) {
                 throw new RuntimeException(e);
             }

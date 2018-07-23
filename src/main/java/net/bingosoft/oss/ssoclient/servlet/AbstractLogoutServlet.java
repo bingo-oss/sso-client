@@ -71,7 +71,7 @@ public abstract class AbstractLogoutServlet extends HttpServlet {
 
         String returnUrl = req.getParameter(POST_LOGOUT_REDIRECT_URI_PARAM);
         if(Strings.isEmpty(returnUrl)){
-            returnUrl = Urls.getServerContextUrl(req);
+            returnUrl = Urls.getServerBaseUrl(req);
             returnUrl = returnUrl + getContextPathOfReverseProxy(req);
             String state = getStateQueryParam(req,resp);
             if(!Strings.isEmpty(state)){
