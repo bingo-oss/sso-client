@@ -342,5 +342,12 @@ response.sendRedirect(req.getContextPath()+"/ssoclient/login?return_url=http%3A%
 
 > 这里`return_url`参数需要以queryString方式传递，并且需要进行url编码。
 
-如果无法重定向到`/ssoclient/login`时指定，3.1.1-SNAPSHOT版本后也可以通过配置`config.setDefaultReturnUrl("http://localhost:8080/return_url");`
+如果无法重定向到`/ssoclient/login`时指定，3.1.1版本后也可以通过配置`config.setDefaultReturnUrl("http://localhost:8080/return_url");`
 的方式指定默认的重定向地址。
+
+**问：如果服务端前有反向代理，重定向地址计算错误怎么办？**
+
+答：有两个方案：
+
+* 在反向代理设置两个请求头：`x-forwarded-proto`和`x-forwarded-host`，这两个请求头表示最终用户在浏览器访问这个服务的协议（http/https）和域名，SDK会优先根据这两个请求头计算重定向地址。
+* 重写`AbstractLoginServlet.buildRedirectUri`方法，按照实际情况拼凑重定向地址，注意，这个地址需要重定向参数`return_url`作为最终登陆完成后打开的页面，如：`https://localhost:8080?return_url=http%3A%2F%2Fwww.baidu.com`
