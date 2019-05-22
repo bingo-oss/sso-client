@@ -161,6 +161,7 @@ public class SSOClientTest {
         resp.put("expires_in","3600");
         resp.put("client_id","console");
         resp.put("scope","perm name user");
+        resp.put("mobile","13434343434");
 
         MappingBuilder mb = post("/oauth2/tokeninfo")
                 .willReturn(aResponse().withStatus(200).withBody(JSON.encode(resp)));
@@ -168,6 +169,7 @@ public class SSOClientTest {
         // 正常返回
         Authentication authc = client.verifyAccessToken(accessToken);
         assertAuthc(authc);
+        Assert.assertEquals("13434343434",authc.getAttributes().get("mobile"));
         //缓存
         Authentication authc1 = client.verifyAccessToken(accessToken);
         Assert.assertTrue(authc == authc1);

@@ -108,20 +108,14 @@ public class TokenProviderImpl implements TokenProvider {
         if(tokenInfoMap.containsKey("error")){
             throw new InvalidTokenException(tokenInfoMap.get("error")+":"+tokenInfoMap.get("error_description"));
         }
-
-        Authentication authc = new Authentication();
-        authc.setUserId((String) tokenInfoMap.remove("user_id"));
-        authc.setClientId((String)tokenInfoMap.remove("client_id"));
-        authc.setUsername((String)tokenInfoMap.remove("username"));
-        
-        String scope = (String)tokenInfoMap.remove("scope");
-        authc.setScope(scope);
+        Authentication authc = createAuthcFromMap(tokenInfoMap);
         String expiresIn = Strings.nullOrToString(tokenInfoMap.remove("expires_in"));
+        
         if(null == expiresIn){
             expiresIn = "0";
         }
         authc.setExpires(System.currentTimeMillis()/1000L+Integer.parseInt(expiresIn));
-
+        
         if(authc.isExpired()){
             throw new TokenExpiredException("token is expired:"+accessToken);
         }
@@ -296,15 +290,8 @@ public class TokenProviderImpl implements TokenProvider {
         authentication.setUserId((String)map.remove("user_id"));
         authentication.setUsername((String)map.remove("username"));
         authentication.setClientId((String)map.remove("client_id"));
-        
-        String scope = (String)map.remove("scope");
-        authentication.setScope(scope);
 
-        String expires = Strings.nullOrToString(map.remove("exp"));
-        authentication.setExpires(expires == null ? 0 : Long.parseLong(expires));
-        for (Entry<String, Object> entry : map.entrySet()){
-            authentication.setAttribute(entry.getKey(),entry.getValue());
-        }
+        extractExpiresAndScopeFromMap(authentication, map);
         return authentication;
     }
 
@@ -314,6 +301,11 @@ public class TokenProviderImpl implements TokenProvider {
         authentication.setUsername((String)map.remove("login_name"));
         authentication.setClientId((String)map.remove("aud"));
 
+        extractExpiresAndScopeFromMap(authentication, map);
+        return authentication;
+    }
+
+    protected void extractExpiresAndScopeFromMap(Authentication authentication, Map<String, Object> map){
         String scope = (String)map.remove("scope");
         authentication.setScope(scope);
 
@@ -322,9 +314,8 @@ public class TokenProviderImpl implements TokenProvider {
         for (Entry<String, Object> entry : map.entrySet()){
             authentication.setAttribute(entry.getKey(),entry.getValue());
         }
-        return authentication;
     }
-
+    
     protected AccessToken createAccessTokenFromMap(Map<String, Object> map){
         AccessToken token = new AccessToken();
         token.setAccessToken((String)map.remove("access_token"));
