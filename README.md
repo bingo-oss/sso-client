@@ -351,3 +351,11 @@ response.sendRedirect(req.getContextPath()+"/ssoclient/login?return_url=http%3A%
 
 * 在反向代理设置两个请求头：`x-forwarded-proto`和`x-forwarded-host`，这两个请求头表示最终用户在浏览器访问这个服务的协议（http/https）和域名，SDK会优先根据这两个请求头计算重定向地址。
 * 重写`AbstractLoginServlet.buildRedirectUri`方法，按照实际情况拼凑重定向地址，注意，这个地址需要重定向参数`return_url`作为最终登陆完成后打开的页面，如：`https://localhost:8080?return_url=http%3A%2F%2Fwww.baidu.com`
+
+**问：sdk异常`Received fatal alert: handshake_failure`怎么处理？**
+
+答：这个异常是由于SSL连接问题导致的，jdk 1.6的版本默认使用较低版本的TLS连接协议，sso服务端使用jdk8，默认不开启低版本的TLS协议，导致握手失败。
+
+解决方法是在客户端应用的启动参数中增加https协议版本`-Dhttps.protocols=SSLv3,TLSv1`。
+
+如：`JAVA_OPTS=$JAVA_OPTS -Dhttps.protocols=SSLv3,TLSv1`。
